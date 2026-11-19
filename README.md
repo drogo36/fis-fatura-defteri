@@ -6,18 +6,30 @@ Fiş ve faturalarını telefonunda takip etmeni sağlayan ücretsiz bir uygulama
 
 ## Neler yapar?
 
+### 👛 Bütçe yönetimi
+- **Gelir & gider:** Maaşını ve ek gelirlerini ekle; ay içinde ne kadar harcadığını ve ne kadar kaldığını, tasarruf oranını gör.
+- **Ay sonu tahmini:** "Bu gidişle ay sonunda yaklaşık ne kadar harcamış olacaksın" hesabı.
+- **Kategori bütçeleri:** Market, akaryakıt, yeme-içme… her kategori için aylık sınır. %80'de ve aşınca uyarı.
+- **Düzenli ödemeler:** Kira, faturalar, abonelikler, kredi taksitleri, maaş. Günü yaklaşınca hatırlatma, "Öde" ile tek dokunuşla gidere işleme.
+- **Taksitler:** Kredi kartıyla taksitli alışverişler aylara bölünür; bu ay ve gelecek ay ne kadar taksit ödeyeceğini gösterir.
+- **Tasarruf hedefleri:** Ev, araba, tatil… Ne kadar biriktirdiğin ve hedef tarihe ulaşmak için ayda ne kadar ayırman gerektiği.
+- **Borç & alacak:** Kime borç verdin, kimden aldın; vadesi gelince hatırlatma.
+- **Ödeme yöntemi:** Kredi kartı, banka kartı, nakit, havale.
+
+### 🧾 Fiş ve fatura
 - **🤖 Yapay zeka ile fiş okuma (Gemini):** Fişin fotoğrafını çekersin; işyeri, tarih, tutar, KDV, belge no, belge türü ve kategori kendiliğinden dolar. ⚙️ Ayarlar'a ücretsiz Gemini anahtarını bir kez yapıştırman yeterli ([anahtar al](https://aistudio.google.com/apikey)). Anahtar sadece telefonunda saklanır.
-- **📷 İnternetsiz yedek okuyucu:** Anahtar yoksa ya da internet yoksa fiş, telefonun içindeki okuyucuyla (Tesseract) okunur.
-- **🔔 Harcama bildirimleri:**
-  - Aylık bütçenin %80'ine gelince ve bütçeyi aşınca
-  - Geçen ayın aynı dönemine göre %25'ten fazla harcayınca
-  - Geçen ayın toplam harcamasını geçince
-  - Bir kategoride (market, akaryakıt…) son 3 ay ortalamasının 1,5 katını geçince
-  - Bir ürünün garantisinin bitmesine 30 gün kala
-- **💰 Vergi indirimi hesabı:** Eğitim ve sağlık harcamalarını ayırır, belgesi uygun olmayanlar için "FATURA İSTE" uyarısı verir, yıllık gelirine göre tahmini vergi avantajını hesaplar.
-- **📊 Raporlar:** Aylık ve kategori bazlı harcama grafikleri, ödenen toplam KDV.
-- **📤 Dışa aktarma:** Excel'de açılan CSV dosyası (mali müşavirine göndermek için).
-- **💾 Yedekleme:** Fotoğraflar dahil tüm kayıtları tek dosyada yedekle, yeni telefona geri yükle.
+- **📷 İnternetsiz yedek okuyucu:** Anahtar yoksa ya da internet yoksa fiş, telefonun içindeki okuyucuyla okunur.
+- **💰 Vergi indirimi hesabı:** Eğitim ve sağlık harcamalarını ayırır, belgesi uygun olmayanlar için "FATURA İSTE" uyarısı verir, tahmini vergi avantajını hesaplar.
+- **🛡️ Garanti takibi:** Garantisi bitmek üzere olan ürünler.
+
+### 🔔 Bildirimler
+Bütçe %80 / aşım, gelirden fazla harcama, geçen aya göre artış, kategori artışı, yaklaşan ve geciken ödemeler, borç vadesi, garanti bitişi.
+
+### 📊 Raporlar
+Gelir-gider grafiği (12 ay), aylık harcama, kategoriler, en çok harcanan yerler, ödeme yöntemleri, günlük ortalama, sabit giderler, ödenen KDV. Excel'de açılan CSV dışa aktarma.
+
+### 🔒 Güvenlik ve yedek
+4 haneli uygulama kilidi. Fotoğraflar dahil tüm verilerin tek dosyada yedeklenip geri yüklenmesi.
 
 ## Telefona kurulum
 

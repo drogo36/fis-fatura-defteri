@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fiş & Fatura Defteri</title>
-<meta name="description" content="Fiş ve faturalarını takip et, vergi indirimini hesapla, aylık harcama artışında bildirim al.">
+<meta name="description" content="Bütçeni yönet: fiş ve faturalar, gelirler, kategori bütçeleri, düzenli ödemeler, taksitler, tasarruf hedefleri ve harcama bildirimleri.">
 <meta name="theme-color" content="#0f766e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -186,6 +186,66 @@
   .view.on{display:block}
   .hidden{display:none!important}
   .backbar{display:flex;align-items:center;gap:8px;margin:-6px 0 14px}
+
+  /* ---- v2 ---- */
+  nav.tabs button{padding:6px 8px}
+  .hero-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .hero-row div{background:rgba(255,255,255,.14);border-radius:12px;padding:8px 10px}
+  .hero-row small{display:block;font-size:11px;opacity:.85;font-weight:600}
+  .hero-row b{font-size:14.5px;white-space:nowrap}
+  .forecast{font-size:12.5px;margin-top:10px;opacity:.95}
+  .sec-h{display:flex;justify-content:space-between;align-items:center;margin:0 0 4px}
+  .sec-h h2{margin:0}
+  .mini{border:0;background:var(--accent-soft);color:var(--accent);font-weight:700;border-radius:10px;padding:7px 12px;cursor:pointer;font-size:13px;white-space:nowrap}
+  .mini.ghost{background:var(--bg);color:var(--ink)}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .item:first-of-type{border-top:0}
+  .item .ico{width:38px;height:38px;font-size:18px;border-radius:11px}
+  .item .mid{flex:1;min-width:0;cursor:pointer}
+  .item .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .s{color:var(--muted);font-size:12.5px;margin-top:1px}
+  .item .amt{font-weight:700;white-space:nowrap;text-align:right}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .due-soon{color:var(--gold);font-weight:700} .due-late{color:var(--red);font-weight:700}
+  .bar .fill.warn{background:var(--gold)} .bar .fill.over{background:var(--red)}
+  .goal{padding:14px 0;border-top:1px solid var(--line)}
+  .goal:first-of-type{border-top:0}
+  .goal .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .goal .top b{font-size:15px}
+  .goal .sub{color:var(--muted);font-size:12.5px;margin:4px 0 8px}
+  .goal .acts{display:flex;gap:8px;margin-top:10px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{background:var(--bg);border-radius:14px;padding:12px}
+  .kpi small{display:block;color:var(--muted);font-size:12px;font-weight:600}
+  .kpi b{font-size:18px;white-space:nowrap}
+  .dual{display:flex;align-items:flex-end;gap:5px;height:150px;padding-top:10px}
+  .dual .m{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .dual .pair{display:flex;gap:2px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+  .dual .c{width:45%;max-width:13px;border-radius:5px 5px 2px 2px;min-height:2px}
+  .dual .c.in{background:var(--green)} .dual .c.out{background:var(--red);opacity:.85}
+  .dual .ml{font-size:10px;color:var(--muted);font-weight:600}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .chooser{display:grid;gap:10px}
+  .chooser button{display:flex;align-items:center;gap:14px;border:1px solid var(--line);background:var(--bg);border-radius:16px;padding:16px;cursor:pointer;text-align:left}
+  .chooser button span.e{font-size:26px}
+  .chooser button b{display:block;font-size:15.5px}
+  .chooser button small{color:var(--muted);font-size:12.5px}
+  .tag.inst{background:var(--accent-soft);color:var(--accent)}
+  .lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  .lock.show{display:flex}
+  .lock h2{margin:10px 0 6px;font-size:20px}
+  .lock p{color:var(--muted);margin:0 0 22px;font-size:14px;text-align:center}
+  .dots{display:flex;gap:16px;margin-bottom:28px}
+  .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);display:block}
+  .dots i.on{background:var(--ink)}
+  .dots.shake{animation:shake .35s}
+  @keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+  .pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
+  .pad button{width:72px;height:72px;border-radius:50%;border:0;background:var(--card);box-shadow:var(--shadow);font-size:26px;font-weight:600;cursor:pointer}
+  .pad button.blank{background:none;box-shadow:none}
+  .empty-s{color:var(--muted);font-size:13.5px;padding:6px 0}
+  .f .hint{font-size:11.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -213,17 +273,89 @@
           <div class="btrack"><div class="bfill" id="sBudgetFill"></div></div>
           <div class="blbl"><span id="sBudgetL"></span><span id="sBudgetR"></span></div>
         </div>
+        <div class="hero-row">
+          <div><small>Gelir</small><b id="hIn">₺0</b></div>
+          <div><small>Gider</small><b id="hOut">₺0</b></div>
+          <div><small>Kalan</small><b id="hLeft">₺0</b></div>
+        </div>
+        <div class="forecast" id="hForecast"></div>
       </div>
       <div class="stat"><div class="k" id="sYearLbl">Yıl toplamı</div><div class="v" id="sTotal">₺0</div></div>
       <div class="stat tax"><div class="k">Vergiden düşülebilir</div><div class="v" id="sTax">₺0</div></div>
+    </div>
+    <div class="card hidden" id="upcomingCard">
+      <div class="sec-h"><h2>📅 Yaklaşan ödemeler</h2></div>
+      <div id="upcomingOut"></div>
     </div>
     <div class="toolbar"><input class="search" id="q" type="search" placeholder="İşyeri, not veya belge no ara…"></div>
     <div class="chips" id="chips"></div>
     <div id="listOut"></div>
   </section>
 
+  <!-- BÜTÇE -->
+  <section class="view" id="v-budget">
+    <div class="card">
+      <div class="sec-h"><h2 id="bMonthTitle">Bu ay</h2><button class="mini" id="addIncomeBtn">+ Gelir</button></div>
+      <div class="kpis" style="margin-top:12px">
+        <div class="kpi"><small>Gelir</small><b class="pos" id="bIn">₺0</b></div>
+        <div class="kpi"><small>Gider</small><b class="neg" id="bOut">₺0</b></div>
+        <div class="kpi"><small>Kalan</small><b id="bLeft">₺0</b></div>
+        <div class="kpi"><small>Tasarruf oranı</small><b id="bRate">—</b></div>
+      </div>
+      <div id="incomeList" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-h"><h2>🎯 Kategori bütçeleri</h2><button class="mini" id="editBudgetsBtn">Düzenle</button></div>
+      <p class="lead">Her kategori için aylık sınır koy, aşmadan önce uyarayım.</p>
+      <div id="catBudgetOut"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-h"><h2>🔁 Düzenli ödemeler</h2><button class="mini" id="addRecBtn">+ Ekle</button></div>
+      <p class="lead" id="recLead">Kira, faturalar, abonelikler, kredi taksitleri, maaş. Günü gelince hatırlatırım; "Öde"ye basınca gidere işlenir.</p>
+      <div id="recOut"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-h"><h2>💳 Taksitler</h2></div>
+      <p class="lead">Taksitli alışverişlerin; her ay ne kadar ödeyeceğin.</p>
+      <div id="instOut"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-h"><h2>🐷 Tasarruf hedefleri</h2><button class="mini" id="addGoalBtn">+ Hedef</button></div>
+      <p class="lead">Ev, araba, tatil… Ne kadar biriktirdiğini ve ayda ne kadar ayırman gerektiğini gösteririm.</p>
+      <div id="goalOut"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-h"><h2>🤝 Borç & alacak</h2><button class="mini" id="addDebtBtn">+ Ekle</button></div>
+      <div class="kpis" style="margin:12px 0 4px">
+        <div class="kpi"><small>Alacağın</small><b class="pos" id="dIn">₺0</b></div>
+        <div class="kpi"><small>Borcun</small><b class="neg" id="dOut">₺0</b></div>
+      </div>
+      <div id="debtOut"></div>
+    </div>
+  </section>
+
   <!-- RAPOR -->
   <section class="view" id="v-report">
+    <div class="card">
+      <h2>Gelir & gider</h2>
+      <p class="lead" id="dualLead">Son 12 ay</p>
+      <div class="dual" id="dualOut"></div>
+      <div class="legend"><span><i style="background:var(--green)"></i>Gelir</span><span><i style="background:var(--red)"></i>Gider</span></div>
+    </div>
+    <div class="card">
+      <h2>Bu ayın özeti</h2>
+      <div class="kpis" style="margin-top:12px">
+        <div class="kpi"><small>Günlük ortalama</small><b id="rDaily">₺0</b></div>
+        <div class="kpi"><small>Ay sonu tahmini</small><b id="rProj">₺0</b></div>
+        <div class="kpi"><small>Sabit giderler</small><b id="rFixed">₺0</b></div>
+        <div class="kpi"><small>Fiş sayısı</small><b id="rCount">0</b></div>
+      </div>
+    </div>
     <div class="card">
       <h2>Aylık harcama</h2>
       <p class="lead" id="monthLead">Seçili yıl</p>
@@ -231,8 +363,18 @@
     </div>
     <div class="card">
       <h2>Kategorilere göre</h2>
-      <p class="lead">Paran en çok nereye gidiyor</p>
+      <p class="lead" id="catLead">Seçili yıl</p>
       <div id="catOut"></div>
+    </div>
+    <div class="card">
+      <h2>En çok harcadığın yerler</h2>
+      <p class="lead">Seçili yıl, ilk 6</p>
+      <div id="shopOut"></div>
+    </div>
+    <div class="card">
+      <h2>Ödeme yöntemleri</h2>
+      <p class="lead">Seçili yıl</p>
+      <div id="payOut"></div>
     </div>
     <div class="card">
       <h2>Ödenen KDV</h2>
@@ -246,7 +388,7 @@
     </div>
     <div class="card">
       <h2>Dışa aktar</h2>
-      <p class="lead">Seçili yılın kayıtlarını Excel'de açılabilen CSV olarak indir. Mali müşavirine göndermek için ideal.</p>
+      <p class="lead">Seçili yılın gider ve gelirlerini Excel'de açılabilen CSV olarak indir.</p>
       <button class="btn block" id="csvBtn">CSV indir</button>
     </div>
   </section>
@@ -292,6 +434,7 @@
     </div>
   </section>
 
+
   <!-- AYARLAR -->
   <section class="view" id="v-settings">
     <div class="backbar"><button class="linkbtn" id="backBtn">‹ Geri</button></div>
@@ -315,6 +458,7 @@
       <div class="note">Anahtar sadece bu telefonda saklanır. Fiş fotoğrafı okunmak için doğrudan Google'a gönderilir; ücretsiz kullanımda Google bu verileri ürünlerini geliştirmek için kullanabilir. İnternet yoksa ya da anahtar yoksa fiş, telefondaki basit okuyucuyla okunur.</div>
     </div>
 
+
     <div class="card" id="installCard">
       <h2>📲 Telefona uygulama olarak kur</h2>
       <p class="lead">Ana ekranına simge olarak eklenir, internetsiz de açılır. Bildirimler için bu adım gerekli.</p>
@@ -328,24 +472,33 @@
     </div>
 
     <div class="card">
-      <h2>🔔 Harcama bildirimleri</h2>
-      <p class="lead">Bu ayki harcaman artınca telefonuna bildirim gelir.</p>
+      <h2>🔔 Bildirimler</h2>
+      <p class="lead">Harcaman artınca, bütçeye yaklaşınca ve ödeme günü gelince haber veririm.</p>
       <div class="perm" id="permState"></div>
       <button class="btn block" id="permBtn">Bildirimlere izin ver</button>
-      <div style="height:8px"></div>
-      <div class="f"><label for="budget">Aylık harcama bütçen (₺) — boş bırakabilirsin</label><input id="budget" inputmode="decimal" placeholder="örn. 25.000"></div>
-      <div class="setrow"><div class="tx"><b>Bütçe uyarısı</b><span>Bütçenin %80'ine gelince ve aşınca</span></div><label class="switch"><input type="checkbox" id="aBudget" checked><span></span></label></div>
-      <div class="setrow"><div class="tx"><b>Geçen aya göre artış</b><span>Geçen ayın aynı dönemine göre %25'ten fazla harcayınca ve geçen ayın toplamını geçince</span></div><label class="switch"><input type="checkbox" id="aMonth" checked><span></span></label></div>
-      <div class="setrow"><div class="tx"><b>Kategori artışı</b><span>Bir kategoride son 3 ay ortalamasının 1,5 katını geçince (örn. market, akaryakıt)</span></div><label class="switch"><input type="checkbox" id="aCat" checked><span></span></label></div>
-      <div class="setrow"><div class="tx"><b>Garanti hatırlatma</b><span>Bir ürünün garantisinin bitmesine 30 gün kala</span></div><label class="switch"><input type="checkbox" id="aWar" checked><span></span></label></div>
+      <div style="height:6px"></div>
+      <div class="setrow"><div class="tx"><b>Bütçe uyarıları</b><span>Toplam ve kategori bütçelerinin %80'ine gelince ve aşınca</span></div><label class="switch"><input type="checkbox" id="aBudget"><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Geçen aya göre artış</b><span>Geçen ayın aynı dönemine göre %25'ten fazla harcayınca ve geçen ayın toplamını geçince</span></div><label class="switch"><input type="checkbox" id="aMonth"><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Kategori artışı</b><span>Bir kategoride son 3 ay ortalamasının 1,5 katını geçince</span></div><label class="switch"><input type="checkbox" id="aCat"><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Ödeme hatırlatma</b><span>Düzenli ödemelere 3 gün kala ve günü geçince; borç/alacak vadesinde</span></div><label class="switch"><input type="checkbox" id="aRec"><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Garanti hatırlatma</b><span>Bir ürünün garantisinin bitmesine 30 gün kala</span></div><label class="switch"><input type="checkbox" id="aWar"><span></span></label></div>
       <button class="btn ghost block" id="testNotif" style="margin-top:8px">Deneme bildirimi gönder</button>
-      <div class="note">Bildirimler, fiş eklediğinde ve uygulamayı açtığında kontrol edilir. Her uyarı ayda bir kez gelir, seni rahatsız etmez.</div>
+      <div class="note">Bildirimler, uygulamayı açtığında ve kayıt eklediğinde kontrol edilir. Her uyarı bir kez gelir.</div>
+    </div>
+
+    <div class="card">
+      <h2>🔒 Uygulama kilidi</h2>
+      <p class="lead">Uygulamayı açarken 4 haneli şifre sorulsun. Telefonunu başkası kullanırken harcamaların görünmez.</p>
+      <div class="perm" id="pinState"></div>
+      <button class="btn block" id="pinSet">Şifre koy</button>
+      <button class="btn danger block hidden" id="pinOff">Kilidi kaldır</button>
+      <div class="note">Şifreyi unutursan kilit ekranındaki "Şifremi unuttum" ile tüm veriler silinerek sıfırlanır. Bu yüzden düzenli yedek al.</div>
     </div>
 
     <div class="card">
       <h2>💾 Yedekleme</h2>
       <p class="lead">Kayıtların sadece bu telefonda duruyor. Telefon değiştirirsen ya da uygulamayı silersen kaybolmasın diye ayda bir yedek al ve Drive'a / WhatsApp'ta kendine gönder.</p>
-      <button class="btn block" id="backupBtn">Yedek al (fotoğraflar dahil)</button>
+      <button class="btn block" id="backupBtn">Yedek al (her şey dahil)</button>
       <button class="btn ghost block" id="restoreBtn">Yedekten geri yükle</button>
       <input type="file" id="restoreFile" accept=".json,application/json" hidden>
       <div class="note" id="lastBackup"></div>
@@ -360,12 +513,26 @@
 
 <nav class="tabs"><div class="in">
   <button class="on" data-v="list"><span class="i">🧾</span>Fişler</button>
-  <button class="add" id="addBtn" aria-label="Yeni fiş ekle">+</button>
+  <button data-v="budget"><span class="i">👛</span>Bütçe</button>
+  <button class="add" id="addBtn" aria-label="Yeni kayıt ekle">+</button>
   <button data-v="report"><span class="i">📊</span>Rapor</button>
   <button data-v="tax"><span class="i">💰</span>Vergi</button>
 </div></nav>
 
-<!-- FORM -->
+<!-- + SEÇİCİ -->
+<div class="sheet-bg" id="chooserBg">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <h2>Ne eklemek istiyorsun?</h2>
+    <div class="chooser">
+      <button id="chPhoto" type="button"><span class="e">📷</span><span><b>Fiş fotoğrafı çek</b><small>Bilgiler otomatik dolar</small></span></button>
+      <button id="chManual" type="button"><span class="e">✍️</span><span><b>Elle gider gir</b><small>Fişsiz harcama, nakit ödeme</small></span></button>
+      <button id="chIncome" type="button"><span class="e">💰</span><span><b>Gelir ekle</b><small>Maaş, ek gelir, kira geliri</small></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- GİDER FORMU -->
 <div class="sheet-bg" id="sheetBg">
   <div class="sheet" role="dialog" aria-modal="true">
     <div class="grab"></div>
@@ -388,6 +555,8 @@
         <div class="f"><label for="fDate">Tarih</label><input id="fDate" type="date"></div>
         <div class="f"><label for="fTotal">Tutar (KDV dahil ₺)</label><input id="fTotal" inputmode="decimal" placeholder="0,00"></div>
         <div class="f"><label for="fCat">Kategori</label><select id="fCat"></select></div>
+        <div class="f"><label for="fPay">Ödeme yöntemi</label><select id="fPay"></select></div>
+        <div class="f"><label for="fInst">Taksit</label><select id="fInst"></select></div>
         <div class="f"><label for="fVat">KDV tutarı (₺)</label><input id="fVat" inputmode="decimal" placeholder="0,00"></div>
         <div class="f"><label for="fDoc">Belge türü</label><select id="fDoc"></select></div>
         <div class="f"><label for="fWho">Kimin için</label><select id="fWho"><option value="ben">Kendim</option><option value="es">Eşim</option><option value="cocuk">Çocuğum</option><option value="diger">Diğer</option></select></div>
@@ -405,6 +574,23 @@
   </div>
 </div>
 
+<!-- GENEL FORM (gelir, düzenli ödeme, hedef, borç, bütçe) -->
+<div class="sheet-bg" id="genBg">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <h2 id="genTitle"></h2>
+    <p class="lead hidden" id="genLead" style="margin:-8px 0 14px;color:var(--muted);font-size:13.5px"></p>
+    <form id="genForm" autocomplete="off" novalidate>
+      <div class="grid" id="genFields"></div>
+      <div class="actions">
+        <button type="button" class="btn danger hidden" id="genDel">Sil</button>
+        <button type="button" class="btn ghost" id="genCancel">Vazgeç</button>
+        <button type="submit" class="btn" id="genSave">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ONAY -->
 <div class="sheet-bg" id="confirmBg">
   <div class="dialog">
@@ -412,29 +598,46 @@
     <div class="actions"><button class="btn ghost" id="cNo">Vazgeç</button><button class="btn danger" id="cYes">Evet</button></div>
   </div>
 </div>
+
+<!-- KİLİT -->
+<div class="lock" id="lock">
+  <div style="font-size:40px">🔒</div>
+  <h2 id="lockTitle">Şifreni gir</h2>
+  <p id="lockSub">Fiş & Fatura Defteri</p>
+  <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="pad"></div>
+  <button class="linkbtn" id="lockForgot" style="margin-top:22px">Şifremi unuttum</button>
+  <button class="linkbtn hidden" id="lockCancel" style="margin-top:10px">Vazgeç</button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
 (() => {
   "use strict";
-  const APP_VERSION = "1.1.0";
+  const APP_VERSION = "2.0.0";
   const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 
   // ================= Sabitler =================
   const CATS = [
     {k:"market",n:"Market",e:"🛒"},{k:"saglik",n:"Sağlık",e:"💊"},{k:"egitim",n:"Eğitim",e:"🎓"},
     {k:"akaryakit",n:"Akaryakıt",e:"⛽"},{k:"restoran",n:"Yeme-içme",e:"🍽️"},{k:"faturalar",n:"Faturalar",e:"💡"},
+    {k:"kira",n:"Kira & aidat",e:"🏠"},{k:"abonelik",n:"Abonelikler",e:"📺"},{k:"kredi",n:"Kredi & borç",e:"🏦"},
     {k:"giyim",n:"Giyim",e:"👕"},{k:"elektronik",n:"Elektronik",e:"📱"},{k:"ev",n:"Ev & Yapı",e:"🛋️"},
-    {k:"ulasim",n:"Ulaşım",e:"🚌"},{k:"arac",n:"Araç bakım",e:"🔧"},{k:"diger",n:"Diğer",e:"📦"}
+    {k:"ulasim",n:"Ulaşım",e:"🚌"},{k:"arac",n:"Araç bakım",e:"🔧"},{k:"eglence",n:"Eğlence",e:"🎉"},
+    {k:"kisisel",n:"Kişisel bakım",e:"💇"},{k:"hediye",n:"Hediye & bağış",e:"🎁"},{k:"diger",n:"Diğer",e:"📦"}
   ];
   const DOCS = [
     {k:"fis",n:"Yazar kasa fişi"},{k:"earsiv",n:"e-Arşiv fatura"},{k:"efatura",n:"e-Fatura"},
-    {k:"kagit",n:"Kağıt fatura"},{k:"smm",n:"Serbest meslek makbuzu"},{k:"diger",n:"Diğer"}
+    {k:"kagit",n:"Kağıt fatura"},{k:"smm",n:"Serbest meslek makbuzu"},{k:"diger",n:"Diğer / belgesiz"}
   ];
+  const PAYS = [{k:"kart",n:"Kredi kartı",e:"💳"},{k:"banka",n:"Banka kartı",e:"🏧"},{k:"nakit",n:"Nakit",e:"💵"},{k:"havale",n:"Havale / EFT",e:"🔄"},{k:"diger",n:"Diğer",e:"•"}];
+  const INC_SRC = [{k:"maas",n:"Maaş",e:"💼"},{k:"ek",n:"Ek iş / prim",e:"🧰"},{k:"kira",n:"Kira geliri",e:"🏠"},{k:"yatirim",n:"Yatırım",e:"📈"},{k:"hediye",n:"Hediye",e:"🎁"},{k:"diger",n:"Diğer",e:"💰"}];
   const TAX_CATS = ["saglik","egitim"];
   const VALID_DOCS = ["earsiv","efatura","kagit","smm"];
   const catOf = k => CATS.find(c=>c.k===k) || CATS[CATS.length-1];
   const docOf = k => DOCS.find(d=>d.k===k) || DOCS[DOCS.length-1];
+  const payOf = k => PAYS.find(p=>p.k===k) || PAYS[PAYS.length-1];
+  const srcOf = k => INC_SRC.find(p=>p.k===k) || INC_SRC[INC_SRC.length-1];
   const isTaxCat = r => TAX_CATS.includes(r.cat);
   const isEligible = r => isTaxCat(r) && VALID_DOCS.includes(r.doc);
   const MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -443,23 +646,29 @@
   const $ = id => document.getElementById(id);
   const fmt = n => new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:2}).format(n||0);
   const fmt0 = n => new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:0}).format(n||0);
+  const r2 = n => Math.round(n*100)/100;
   const parseNum = s => {
-    if (typeof s === "number") return isFinite(s) ? Math.round(s*100)/100 : 0;
+    if (typeof s === "number") return isFinite(s) ? r2(s) : 0;
     s = String(s||"").trim().replace(/[₺\s*]/g,"").replace(/TL$/i,"");
     if (!s) return 0;
     if (s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
     else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,"");
-    const n = parseFloat(s); return isFinite(n) ? Math.round(n*100)/100 : 0;
+    const n = parseFloat(s); return isFinite(n) ? r2(n) : 0;
   };
   const numToInput = n => n ? String(n).replace(".",",") : "";
   const pad = n => String(n).padStart(2,"0");
   const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
   const today = () => ymd(new Date());
   const ymOf = d => d.getFullYear()+"-"+pad(d.getMonth()+1);
+  const curYM = () => ymOf(new Date());
+  const addMonths = (ym, n) => { const [y,m] = ym.split("-").map(Number); const d = new Date(y, m-1+n, 1); return ymOf(d); };
+  const daysIn = ym => { const [y,m] = ym.split("-").map(Number); return new Date(y, m, 0).getDate(); };
+  const monthName = ym => MONTHS[parseInt(ym.slice(5,7))-1] + " " + ym.slice(0,4);
+  const dayDiff = (a, b) => Math.round((new Date(a) - new Date(b)) / 864e5);
   const el = (tag, cls, text) => { const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
-  const newId = () => "r" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const newId = p => (p||"r") + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   const fmtDate = d => { if(!d) return ""; const p=d.split("-"); return parseInt(p[2])+" "+(MONTHS[parseInt(p[1])-1]||"").slice(0,3); };
-  const sum = arr => arr.reduce((s,r)=>s+(r.total||0),0);
+  const sumBy = (arr, f) => arr.reduce((s,x)=>s+((f?f(x):x)||0), 0);
   function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2800); }
   const ls = {
     get(k, d){ try { const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); } catch(e){ return d; } },
@@ -470,10 +679,11 @@
   const DB = (() => {
     let dbp;
     const open = () => dbp || (dbp = new Promise((res, rej) => {
-      const r = indexedDB.open("fis-fatura-defteri", 1);
+      const r = indexedDB.open("fis-fatura-defteri", 2);
       r.onupgradeneeded = () => { const d = r.result;
         if (!d.objectStoreNames.contains("receipts")) d.createObjectStore("receipts", {keyPath:"id"});
-        if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos"); };
+        if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos");
+        if (!d.objectStoreNames.contains("records")) d.createObjectStore("records", {keyPath:"id"}); };
       r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
     }));
     const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -483,7 +693,11 @@
       async put(r){ const d = await open(); const t = d.transaction("receipts","readwrite"); t.objectStore("receipts").put(r); return done(t); },
       async del(id){ const d = await open(); const t = d.transaction(["receipts","photos"],"readwrite"); t.objectStore("receipts").delete(id); t.objectStore("photos").delete(id); return done(t); },
       async putPhoto(id, blob){ const d = await open(); const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(blob, id); return done(t); },
-      async getPhoto(id){ const d = await open(); return req(d.transaction("photos").objectStore("photos").get(id)); }
+      async getPhoto(id){ const d = await open(); return req(d.transaction("photos").objectStore("photos").get(id)); },
+      async recAll(){ const d = await open(); return req(d.transaction("records").objectStore("records").getAll()); },
+      async recPut(r){ const d = await open(); const t = d.transaction("records","readwrite"); t.objectStore("records").put(r); return done(t); },
+      async recDel(id){ const d = await open(); const t = d.transaction("records","readwrite"); t.objectStore("records").delete(id); return done(t); },
+      async wipe(){ const d = await open(); const t = d.transaction(["receipts","photos","records"],"readwrite"); ["receipts","photos","records"].forEach(s=>t.objectStore(s).clear()); return done(t); }
     };
   })();
   const photoUrls = new Map();
@@ -494,69 +708,143 @@
   function dropPhotoUrl(id){ const u = photoUrls.get(id); if (u) { URL.revokeObjectURL(u); photoUrls.delete(id); } }
 
   // ================= Durum =================
-  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, aBudget:true, aMonth:true, aCat:true, aWar:true};
+  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, catBudgets:{}, aBudget:true, aMonth:true, aCat:true, aRec:true, aWar:true};
   const state = {
-    receipts: [], year: new Date().getFullYear(), cat:"all", taxOnly:false, q:"",
+    receipts: [], records: [], year: new Date().getFullYear(), cat:"all", taxOnly:false, q:"",
     settings: Object.assign({}, DEFAULT_SETTINGS, ls.get("fd.settings", {}))
   };
+  if (!state.settings.catBudgets || typeof state.settings.catBudgets !== "object") state.settings.catBudgets = {};
   const saveSettings = () => ls.set("fd.settings", state.settings);
+  const recs = kind => state.records.filter(x => x.kind === kind);
 
   async function load(){
-    try { state.receipts = await DB.all(); }
-    catch(e){ state.receipts = []; toast("Kayıtlar açılamadı. Tarayıcı gizli modda olabilir."); }
+    try { state.receipts = await DB.all(); state.records = await DB.recAll(); }
+    catch(e){ toast("Kayıtlar açılamadı. Tarayıcı gizli modda olabilir."); }
     render();
+  }
+  async function saveRecord(x){
+    await DB.recPut(x);
+    const i = state.records.findIndex(y=>y.id===x.id); if (i>=0) state.records[i]=x; else state.records.push(x);
+  }
+  async function deleteRecord(id){ await DB.recDel(id); state.records = state.records.filter(y=>y.id!==id); }
+  async function saveReceipt(r){
+    await DB.put(r);
+    const i = state.receipts.findIndex(x=>x.id===r.id); if (i>=0) state.receipts[i]=r; else state.receipts.push(r);
+  }
+
+  // ================= Hesaplar =================
+  // Taksitli alışverişler aylara bölünür; bütçe ve aylık toplamlar buna göre hesaplanır.
+  function allocs(r){
+    const n = Math.max(1, Math.min(36, parseInt(r.inst)||1)), total = r.total||0, start = (r.date||today()).slice(0,7);
+    if (n === 1) return [{ym:start, amount:total}];
+    const per = Math.floor(total/n*100)/100, out = [];
+    for (let i=0;i<n;i++) out.push({ym:addMonths(start,i), amount: i===n-1 ? r2(total - per*(n-1)) : per});
+    return out;
+  }
+  const spent = (ym, f) => sumBy(state.receipts.filter(r=>!f||f(r)), r => sumBy(allocs(r).filter(a=>a.ym===ym), a=>a.amount));
+  const spentYear = (y, f) => { let s=0; for (let m=1;m<=12;m++) s += spent(y+"-"+pad(m), f); return s; };
+  const incomeIn = ym => sumBy(recs("income").filter(x=>(x.date||"").slice(0,7)===ym), x=>x.amount);
+  const yearItems = () => state.receipts.filter(r => (r.date||"").slice(0,4) === String(state.year));
+
+  function monthStats(){
+    const now = new Date(), ym = ymOf(now), pym = addMonths(ym,-1), day = now.getDate();
+    const cur = spent(ym), prevTotal = spent(pym);
+    const prevSame = sumBy(state.receipts, r => sumBy(allocs(r).filter(a=>a.ym===pym), a => {
+      const d = a.ym === (r.date||"").slice(0,7) ? parseInt((r.date||"").slice(8,10)) : 1; return d <= day ? a.amount : 0; }));
+    return {ym, pym, cur, prevTotal, prevSame, now, day};
+  }
+  // Düzenli ödemeler
+  const recDueDate = (rc, ym) => ym + "-" + pad(Math.min(rc.day||1, daysIn(ym)));
+  const recActiveIn = (rc, ym) => rc.active !== false && (rc.freq !== "yearly" || parseInt(ym.slice(5,7)) === (rc.month||1)) && (!rc.start || ym >= rc.start.slice(0,7));
+  const recPaid = (rc, ym) => (rc.paid||[]).includes(ym);
+  function upcoming(daysAhead){
+    const t = today(), out = [];
+    for (const rc of recs("rec")) for (const ym of [addMonths(curYM(),-1), curYM(), addMonths(curYM(),1)]) {
+      if (!recActiveIn(rc, ym) || recPaid(rc, ym)) continue;
+      const due = recDueDate(rc, ym), d = dayDiff(due, t);
+      if (rc.start && due < rc.start) continue;
+      if (d <= daysAhead && (d >= -40)) out.push({rc, ym, due, d});
+    }
+    return out.sort((a,b)=>a.due.localeCompare(b.due));
+  }
+  function forecast(){
+    const s = monthStats(), dim = daysIn(s.ym);
+    const variable = spent(s.ym, r => !r.recId && (parseInt(r.inst)||1) === 1);
+    const fixedDone = s.cur - variable;
+    const unpaid = sumBy(recs("rec").filter(rc => rc.type !== "income" && recActiveIn(rc, s.ym) && !recPaid(rc, s.ym)), rc=>rc.amount);
+    const proj = s.day >= 3 ? variable / s.day * dim : variable;
+    return { proj: proj + fixedDone + unpaid, daily: variable / Math.max(1, s.day), fixed: fixedDone + unpaid };
   }
 
   // ================= Render =================
-  const yearItems = () => state.receipts.filter(r => (r.date||"").slice(0,4) === String(state.year));
-  const monthItems = ym => state.receipts.filter(r => (r.date||"").slice(0,7) === ym);
-
   function render(){
     const years = new Set([new Date().getFullYear()]);
     state.receipts.forEach(r => { const y=parseInt((r.date||"").slice(0,4)); if(y) years.add(y); });
+    recs("income").forEach(r => { const y=parseInt((r.date||"").slice(0,4)); if(y) years.add(y); });
     const ys = [...years].sort((a,b)=>b-a), sel = $("yearSel");
     if (sel.dataset.v !== ys.join(",")) { sel.innerHTML=""; ys.forEach(y=>{ const o=el("option",null,String(y)); o.value=y; sel.append(o); }); sel.dataset.v=ys.join(","); }
     sel.value = state.year;
-
     const items = yearItems();
-    $("sYearLbl").textContent = state.year + " toplamı";
-    $("sTotal").textContent = fmt(sum(items));
-    $("sVat").textContent = fmt(items.reduce((s,r)=>s+(r.vat||0),0));
-    $("sTax").textContent = fmt(sum(items.filter(isEligible)));
-    renderMonthCard(); renderAlerts();
-    renderChips(items); renderList(items); renderReport(items); renderCalc(items);
-  }
-
-  function monthStats(){
-    const now = new Date(); const ym = ymOf(now);
-    const prev = new Date(now.getFullYear(), now.getMonth()-1, 1); const pym = ymOf(prev);
-    const day = now.getDate();
-    const cur = sum(monthItems(ym));
-    const prevAll = monthItems(pym);
-    const prevTotal = sum(prevAll);
-    const prevSame = sum(prevAll.filter(r => parseInt(r.date.slice(8,10)) <= day));
-    return {ym, pym, cur, prevTotal, prevSame, now};
+    $("sYearLbl").textContent = state.year + " harcaması";
+    $("sTotal").textContent = fmt(spentYear(state.year));
+    $("sVat").textContent = fmt(sumBy(items, r=>r.vat));
+    $("sTax").textContent = fmt(sumBy(items.filter(isEligible), r=>r.total));
+    renderMonthCard(); renderAlerts(); renderUpcoming();
+    renderChips(items); renderList(items); renderBudget(); renderReport(items); renderCalc(items);
   }
 
   function renderMonthCard(){
-    const s = monthStats();
+    const s = monthStats(), inc = incomeIn(s.ym), left = inc - s.cur;
     $("sMonthLbl").textContent = MONTHS[s.now.getMonth()] + " ayı harcaman";
     $("sMonth").textContent = fmt(s.cur);
     let cmp = "";
-    if (s.prevSame > 0) {
-      const p = Math.round((s.cur - s.prevSame) / s.prevSame * 100);
-      cmp = (p > 0 ? "▲ %"+p+" fazla" : p < 0 ? "▼ %"+Math.abs(p)+" az" : "Aynı") + " · geçen ayın aynı dönemine göre";
-    } else if (s.prevTotal > 0) cmp = "Geçen ay toplam: " + fmt0(s.prevTotal);
+    if (s.prevSame > 0) { const p = Math.round((s.cur - s.prevSame) / s.prevSame * 100);
+      cmp = (p > 0 ? "▲ %"+p+" fazla" : p < 0 ? "▼ %"+Math.abs(p)+" az" : "Aynı") + " · geçen ayın aynı dönemine göre"; }
+    else if (s.prevTotal > 0) cmp = "Geçen ay toplam: " + fmt0(s.prevTotal);
     $("sMonthCmp").textContent = cmp;
     const b = state.settings.budget;
     $("sBudget").classList.toggle("hidden", !b);
-    if (b) {
-      const ratio = s.cur / b;
-      $("sBudgetFill").style.width = Math.min(100, ratio*100) + "%";
-      $("sBudgetFill").classList.toggle("over", ratio >= 1);
+    if (b) { const ratio = s.cur / b;
+      $("sBudgetFill").style.width = Math.min(100, ratio*100) + "%"; $("sBudgetFill").classList.toggle("over", ratio >= 1);
       $("sBudgetL").textContent = "Bütçe %" + Math.round(ratio*100);
-      $("sBudgetR").textContent = ratio >= 1 ? fmt0(s.cur-b) + " aşıldı" : fmt0(b-s.cur) + " kaldı";
-    }
+      $("sBudgetR").textContent = ratio >= 1 ? fmt0(s.cur-b) + " aşıldı" : fmt0(b-s.cur) + " kaldı"; }
+    $("hIn").textContent = fmt0(inc); $("hOut").textContent = fmt0(s.cur); $("hLeft").textContent = (left<0?"-":"") + fmt0(Math.abs(left));
+    const fc = forecast();
+    $("hForecast").textContent = s.cur > 0 ? "🔮 Bu gidişle ay sonunda yaklaşık " + fmt0(fc.proj) + " harcamış olacaksın" + (inc ? (fc.proj > inc ? " — gelirini aşabilirsin." : ".") : ".") : "";
+  }
+
+  function renderUpcoming(){
+    const list = upcoming(7), out = $("upcomingOut"); out.innerHTML = "";
+    $("upcomingCard").classList.toggle("hidden", !list.length);
+    list.slice(0,5).forEach(u => out.append(recRow(u.rc, u)));
+  }
+  function dueText(d){ return d < 0 ? Math.abs(d)+" gün gecikti" : d === 0 ? "bugün" : d === 1 ? "yarın" : d+" gün kaldı"; }
+  function recRow(rc, u){
+    const isInc = rc.type === "income";
+    const row = el("div","item");
+    row.append(el("div","ico", isInc ? srcOf(rc.src).e : catOf(rc.cat).e));
+    const mid = el("div","mid"); mid.onclick = () => openRecForm(rc);
+    mid.append(el("div","t", rc.name));
+    const s = el("div","s");
+    if (u) { const span = el("span", u.d < 0 ? "due-late" : u.d <= 3 ? "due-soon" : "", dueText(u.d)); s.append(span, document.createTextNode(" · " + fmtDate(u.due))); }
+    else { s.textContent = (rc.freq === "yearly" ? "Her yıl " + parseInt(rc.day) + " " + MONTHS[(rc.month||1)-1] : "Her ayın " + rc.day + ". günü") + (rc.active === false ? " · durduruldu" : ""); }
+    mid.append(s);
+    const amt = el("div","amt " + (isInc ? "pos" : ""), (isInc ? "+" : "") + fmt0(rc.amount));
+    row.append(mid, amt);
+    if (u) { const b = el("button","mini", isInc ? "Alındı" : "Öde"); b.onclick = () => payRec(rc, u.ym); row.append(b); }
+    return row;
+  }
+  async function payRec(rc, ym){
+    try {
+      if (rc.type === "income") {
+        await saveRecord({id:newId("i"), kind:"income", date: today(), amount: rc.amount, src: rc.src || "maas", note: rc.name, recId: rc.id});
+      } else {
+        await saveReceipt({id:newId(), createdAt:Date.now(), store: rc.name, date: today(), total: rc.amount, vat:0, cat: rc.cat || "faturalar", doc:"diger", pay: rc.pay || "banka", inst:1, who:"ben", no:"", warranty:"", note:"Düzenli ödeme", recId: rc.id});
+      }
+      const paid = (rc.paid||[]).filter(x=>x>=addMonths(curYM(),-24)); paid.push(ym);
+      await saveRecord(Object.assign({}, rc, {paid}));
+      render(); toast(rc.type === "income" ? "Gelir işlendi ✓" : "Ödendi, gidere işlendi ✓"); checkAlerts();
+    } catch(e){ toast("Kaydedilemedi, tekrar dene."); }
   }
 
   function renderChips(items){
@@ -578,15 +866,15 @@
     if (!list.length) {
       const e = el("div","empty");
       e.append(el("div","big", state.receipts.length ? "🔍" : "🧾"));
-      e.append(el("b",null, state.receipts.length ? "Bu filtreye uyan kayıt yok" : "Henüz fiş eklemedin"));
-      e.append(el("div",null, state.receipts.length ? "Filtreyi veya yılı değiştir." : "Alttaki + butonuna bas, fişin fotoğrafını çek; bilgiler otomatik dolar."));
+      e.append(el("b",null, state.receipts.length ? "Bu filtreye uyan kayıt yok" : "Henüz harcama eklemedin"));
+      e.append(el("div",null, state.receipts.length ? "Filtreyi veya yılı değiştir." : "Alttaki + butonuna bas: fiş çek, elle gider gir ya da gelir ekle."));
       out.append(e); return;
     }
     const groups = {};
     list.forEach(r => { const k=(r.date||"").slice(0,7); (groups[k]=groups[k]||[]).push(r); });
     Object.keys(groups).sort().reverse().forEach(k => {
-      const g = groups[k]; const m = parseInt(k.slice(5,7))-1;
-      const h = el("div","month"); h.append(el("h3",null,(MONTHS[m]||"")+" "+k.slice(0,4)), el("span",null,fmt(sum(g))));
+      const g = groups[k];
+      const h = el("div","month"); h.append(el("h3",null,monthName(k)), el("span",null,fmt(sumBy(g,r=>r.total))));
       out.append(h);
       const box = el("div","list");
       g.forEach(r => {
@@ -595,31 +883,146 @@
         const ico = el("div","ico", c.e);
         if (r.hasPhoto) photoUrl(r.id).then(u => { if (u) { const im=new Image(); im.alt=""; im.src=u; ico.textContent=""; ico.append(im); } });
         const mid = el("div","mid"); mid.append(el("div","t", r.store||"(isimsiz)"));
-        const s = el("div","s"); s.append(document.createTextNode(fmtDate(r.date)+" · "+c.n));
+        const s = el("div","s"); s.append(document.createTextNode(fmtDate(r.date)+" · "+c.n+(r.pay?" · "+payOf(r.pay).n:"")));
+        if ((parseInt(r.inst)||1) > 1) s.append(el("span","tag inst", r.inst+" TAKSİT"));
         if (isEligible(r)) s.append(el("span","tag ok","VERGİYE UYGUN"));
         else if (isTaxCat(r)) s.append(el("span","tag warn","FATURA İSTE"));
         mid.append(s);
-        const amt = el("div","amt", fmt(r.total)); if (r.vat) amt.append(el("small",null,"KDV "+fmt(r.vat)));
+        const amt = el("div","amt", fmt(r.total));
+        if ((parseInt(r.inst)||1) > 1) amt.append(el("small",null,"aylık "+fmt(allocs(r)[0].amount)));
+        else if (r.vat) amt.append(el("small",null,"KDV "+fmt(r.vat)));
         row.append(ico, mid, amt); box.append(row);
       });
       out.append(box);
     });
   }
 
+  // ---- Bütçe sekmesi ----
+  function barEl(label, right, ratio){
+    const b = el("div","bar"); const l = el("div","lbl"); l.append(el("b",null,label), el("span",null,right));
+    const t = el("div","track"); const f = el("div","fill" + (ratio>=1?" over":ratio>=0.8?" warn":""));
+    f.style.width = Math.min(100, ratio*100) + "%"; t.append(f); b.append(l, t); return b;
+  }
+  function renderBudget(){
+    const ym = curYM(), inc = incomeIn(ym), out = spent(ym), left = inc - out;
+    $("bMonthTitle").textContent = "💼 " + MONTHS[new Date().getMonth()] + " özeti";
+    $("bIn").textContent = fmt0(inc); $("bOut").textContent = fmt0(out);
+    $("bLeft").textContent = (left<0?"-":"") + fmt0(Math.abs(left)); $("bLeft").className = left < 0 ? "neg" : "pos";
+    $("bRate").textContent = inc > 0 ? "%" + Math.round(left/inc*100) : "—";
+    // gelir listesi
+    const il = $("incomeList"); il.innerHTML = "";
+    const incs = recs("income").filter(x=>(x.date||"").slice(0,7)===ym).sort((a,b)=>b.date.localeCompare(a.date));
+    if (!incs.length) il.append(el("div","empty-s","Bu ay gelir eklemedin. Maaşını eklersen ne kadar kaldığını gösteririm."));
+    incs.forEach(x => { const row = el("div","item"); row.append(el("div","ico", srcOf(x.src).e));
+      const mid = el("div","mid"); mid.onclick = () => openIncomeForm(x); mid.append(el("div","t", x.note || srcOf(x.src).n), el("div","s", fmtDate(x.date)+" · "+srcOf(x.src).n));
+      row.append(mid, el("div","amt pos","+"+fmt0(x.amount))); il.append(row); });
+    // kategori bütçeleri
+    const cb = $("catBudgetOut"); cb.innerHTML = "";
+    const st = state.settings;
+    if (st.budget > 0) cb.append(barEl("🧮 Toplam", fmt0(out)+" / "+fmt0(st.budget), out/st.budget));
+    const set = Object.entries(st.catBudgets||{}).filter(([k,v])=>v>0);
+    set.sort((a,b)=> spent(ym,r=>r.cat===b[0])/b[1] - spent(ym,r=>r.cat===a[0])/a[1]);
+    set.forEach(([k,v]) => { const s = spent(ym, r=>r.cat===k); cb.append(barEl(catOf(k).e+"  "+catOf(k).n, fmt0(s)+" / "+fmt0(v), s/v)); });
+    if (!st.budget && !set.length) cb.append(el("div","empty-s","Henüz bütçe koymadın. \"Düzenle\"ye bas, örneğin Market için 8.000 ₺ yaz."));
+    // düzenli ödemeler
+    const ro = $("recOut"); ro.innerHTML = "";
+    const all = recs("rec").sort((a,b)=>(a.type==="income")-(b.type==="income") || (a.day||0)-(b.day||0));
+    if (!all.length) ro.append(el("div","empty-s","Henüz düzenli ödeme yok. Kira, elektrik, internet, Netflix gibi her ay tekrar edenleri ekle."));
+    const upMap = new Map(); upcoming(400).forEach(u => { if (!upMap.has(u.rc.id)) upMap.set(u.rc.id, u); });
+    all.forEach(rc => ro.append(recRow(rc, upMap.has(rc.id) && upMap.get(rc.id).d <= 7 ? upMap.get(rc.id) : null)));
+    const fixedM = sumBy(all.filter(rc=>rc.type!=="income" && rc.active!==false), rc => rc.freq==="yearly" ? rc.amount/12 : rc.amount);
+    $("recLead").textContent = all.length ? "Aylık sabit giderin yaklaşık " + fmt0(fixedM) + ". Günü gelince hatırlatırım; \"Öde\"ye basınca gidere işlenir." : "Kira, faturalar, abonelikler, kredi taksitleri, maaş. Günü gelince hatırlatırım; \"Öde\"ye basınca gidere işlenir.";
+    // taksitler
+    const io = $("instOut"); io.innerHTML = "";
+    const active = state.receipts.filter(r => (parseInt(r.inst)||1) > 1).map(r => { const a = allocs(r); const rem = a.filter(x=>x.ym>=ym); return {r, a, rem}; }).filter(x=>x.rem.length);
+    if (!active.length) io.append(el("div","empty-s","Devam eden taksit yok. Gider eklerken \"Taksit\" kutusundan taksit sayısını seçebilirsin."));
+    else {
+      const thisM = sumBy(active, x => sumBy(x.rem.filter(y=>y.ym===ym), y=>y.amount)), nextM = sumBy(active, x => sumBy(x.rem.filter(y=>y.ym===addMonths(ym,1)), y=>y.amount));
+      const k = el("div","kpis"); k.style.marginBottom = "8px";
+      const k1 = el("div","kpi"); k1.append(el("small",null,"Bu ay taksit"), el("b",null,fmt0(thisM)));
+      const k2 = el("div","kpi"); k2.append(el("small",null,"Gelecek ay"), el("b",null,fmt0(nextM))); k.append(k1,k2); io.append(k);
+      active.sort((a,b)=>b.rem.length-a.rem.length).forEach(x => { const row = el("div","item"); row.append(el("div","ico", catOf(x.r.cat).e));
+        const mid = el("div","mid"); mid.onclick = () => openForm(x.r);
+        const curIdx = x.a.findIndex(y=>y.ym===ym) + 1, after = x.rem.length - (curIdx ? 1 : 0);
+        mid.append(el("div","t", x.r.store), el("div","s", (curIdx ? curIdx + ". taksit / " + x.a.length : "Başlamadı · " + x.a.length + " taksit") + " · " + (after ? after + " taksit kaldı" : "son taksit") + " · toplam " + fmt0(x.r.total)));
+        row.append(mid, el("div","amt", fmt0(x.rem[0].amount)+"/ay")); io.append(row); });
+    }
+    // hedefler
+    const go = $("goalOut"); go.innerHTML = "";
+    const goals = recs("goal");
+    if (!goals.length) go.append(el("div","empty-s","Henüz hedef yok. Örneğin \"Araba peşinatı · 300.000 ₺ · 2027 Aralık\" ekle."));
+    goals.forEach(g => {
+      const d = el("div","goal"); const top = el("div","top"); top.append(el("b",null,(g.emoji||"🎯")+" "+g.name), el("span",null,fmt0(g.saved||0)+" / "+fmt0(g.target)));
+      const ratio = g.target ? (g.saved||0)/g.target : 0;
+      const t = el("div","track"); t.style.cssText = "height:9px;background:var(--bg);border-radius:99px;overflow:hidden"; const f = el("div","fill"); f.style.cssText = "height:100%;border-radius:99px;background:var(--green);width:"+Math.min(100,ratio*100)+"%"; t.append(f);
+      let sub = "%" + Math.round(ratio*100) + " tamamlandı";
+      if (ratio >= 1) sub = "🎉 Hedefe ulaştın!";
+      else if (g.deadline) { const months = Math.max(1, (parseInt(g.deadline.slice(0,4))-new Date().getFullYear())*12 + parseInt(g.deadline.slice(5,7)) - (new Date().getMonth()+1));
+        sub += " · hedefe kadar ayda " + fmt0((g.target-(g.saved||0))/months) + " ayırmalısın (" + months + " ay)"; }
+      const acts = el("div","acts"); const a1 = el("button","mini","+ Para ekle"); a1.onclick = () => openGoalMoney(g, 1);
+      const a2 = el("button","mini ghost","− Çek"); a2.onclick = () => openGoalMoney(g, -1);
+      const a3 = el("button","mini ghost","Düzenle"); a3.onclick = () => openGoalForm(g); acts.append(a1,a2,a3);
+      d.append(top, el("div","sub",sub), t, acts); go.append(d);
+    });
+    // borç/alacak
+    const dout = $("debtOut"); dout.innerHTML = "";
+    const debts = recs("debt").sort((a,b)=>(a.closed?1:0)-(b.closed?1:0) || (a.due||"9").localeCompare(b.due||"9"));
+    $("dIn").textContent = fmt0(sumBy(debts.filter(x=>!x.closed && x.dir==="alacak"), x=>x.amount));
+    $("dOut").textContent = fmt0(sumBy(debts.filter(x=>!x.closed && x.dir==="borc"), x=>x.amount));
+    if (!debts.length) dout.append(el("div","empty-s","Kime borç verdiğini ya da kimden aldığını not et, vadesi gelince hatırlatayım."));
+    debts.forEach(x => { const row = el("div","item"); if (x.closed) row.style.opacity = ".5";
+      row.append(el("div","ico", x.dir==="alacak" ? "⬅️" : "➡️"));
+      const mid = el("div","mid"); mid.onclick = () => openDebtForm(x);
+      const dd = x.due && !x.closed ? dayDiff(x.due, today()) : null;
+      mid.append(el("div","t", x.person), el("div","s", (x.dir==="alacak"?"Bana borçlu":"Ona borçluyum") + (x.closed ? " · kapandı" : dd!=null ? " · vade " + fmtDate(x.due) + " (" + dueText(dd) + ")" : "")));
+      row.append(mid, el("div","amt "+(x.dir==="alacak"?"pos":"neg"), fmt0(x.amount)));
+      if (!x.closed) { const b = el("button","mini","Kapandı"); b.onclick = async () => { await saveRecord(Object.assign({}, x, {closed:true, closedAt: today()})); render(); toast("Kapatıldı ✓"); }; row.append(b); }
+      dout.append(row); });
+  }
+
+  // ---- Rapor ----
   function renderReport(items){
-    const mo = Array(12).fill(0); items.forEach(r=>{ const m=parseInt((r.date||"").slice(5,7))-1; if(m>=0) mo[m]+=r.total||0; });
-    const max = Math.max(...mo, 1), b = state.settings.budget, mOut=$("monthsOut"); mOut.innerHTML="";
+    const y = state.year;
+    // gelir & gider (seçili yıl 12 ay)
+    const ins = [], outs = [];
+    for (let m=1;m<=12;m++){ const ym = y+"-"+pad(m); ins.push(incomeIn(ym)); outs.push(spent(ym)); }
+    const mx = Math.max(1, ...ins, ...outs), dOut = $("dualOut"); dOut.innerHTML = "";
+    for (let i=0;i<12;i++){ const m = el("div","m"); const p = el("div","pair");
+      const a = el("div","c in"); a.style.height = Math.max(1, ins[i]/mx*100) + "%"; a.title = "Gelir " + fmt(ins[i]);
+      const b = el("div","c out"); b.style.height = Math.max(1, outs[i]/mx*100) + "%"; b.title = "Gider " + fmt(outs[i]);
+      p.append(a,b); m.append(p, el("div","ml", MONTHS[i].slice(0,3))); dOut.append(m); }
+    const ti = sumBy(ins), to = sumBy(outs);
+    $("dualLead").textContent = y + " · gelir " + fmt0(ti) + " · gider " + fmt0(to) + (ti ? " · tasarruf %" + Math.round((ti-to)/ti*100) : "");
+    // bu ay
+    const fc = forecast();
+    $("rDaily").textContent = fmt0(fc.daily); $("rProj").textContent = fmt0(fc.proj); $("rFixed").textContent = fmt0(fc.fixed);
+    $("rCount").textContent = String(state.receipts.filter(r=>(r.date||"").slice(0,7)===curYM()).length);
+    // aylık
+    const mo = outs, max = Math.max(...mo, 1), b = state.settings.budget, mOut=$("monthsOut"); mOut.innerHTML="";
     mo.forEach((v,i)=>{ const m=el("div","m"); const col=el("div","col"+(v?"":" zero")+(b && v>b?" over":"")); col.style.height=Math.max(2,(v/max)*100)+"%"; col.title=MONTHS[i]+": "+fmt(v); m.append(col, el("div","ml",MONTHS[i].slice(0,3))); mOut.append(m); });
     const nz = mo.filter(v=>v>0);
-    $("monthLead").textContent = nz.length ? state.year+" · aylık ortalama "+fmt0(nz.reduce((a,c)=>a+c,0)/nz.length)+(b?" · kırmızı: bütçe aşılan ay":"") : state.year+" · henüz veri yok";
-
-    const byCat = {}; items.forEach(r=>{ byCat[r.cat]=(byCat[r.cat]||0)+(r.total||0); });
-    const tot = Object.values(byCat).reduce((a,c)=>a+c,0), cOut=$("catOut"); cOut.innerHTML="";
+    $("monthLead").textContent = nz.length ? y+" · aylık ortalama "+fmt0(sumBy(nz)/nz.length)+(b?" · kırmızı: bütçe aşılan ay":"") : y+" · henüz veri yok";
+    // kategoriler
+    const byCat = {}; CATS.forEach(c => { const v = spentYear(y, r=>r.cat===c.k); if (v) byCat[c.k]=v; });
+    const tot = sumBy(Object.values(byCat)), cOut=$("catOut"); cOut.innerHTML="";
+    $("catLead").textContent = y + " · toplam " + fmt0(tot);
     const entries = Object.entries(byCat).sort((a,c)=>c[1]-a[1]);
     if (!entries.length) cOut.append(el("div","note","Kayıt ekledikçe burada dağılımı göreceksin."));
     const cmax = entries.length ? entries[0][1] : 1;
     entries.forEach(([k,v])=>{ const c=catOf(k); const bar=el("div","bar"); const l=el("div","lbl"); l.append(el("b",null,c.e+"  "+c.n), el("span",null,fmt0(v)+"  ·  %"+Math.round(v/tot*100))); const t=el("div","track"); const f=el("div","fill"); f.style.width=(v/cmax*100)+"%"; t.append(f); bar.append(l,t); cOut.append(bar); });
-
+    // işyerleri
+    const shops = {}; items.forEach(r => { const k = (r.store||"?").trim(); const key = k.toLocaleLowerCase("tr"); shops[key] = shops[key] || {n:k, v:0, c:0}; shops[key].v += r.total||0; shops[key].c++; });
+    const sl = Object.values(shops).sort((a,b)=>b.v-a.v).slice(0,6), sOut = $("shopOut"); sOut.innerHTML = "";
+    if (!sl.length) sOut.append(el("div","note","Henüz veri yok."));
+    sl.forEach(x => sOut.append(barEl(x.n + " (" + x.c + ")", fmt0(x.v), 0)));
+    sOut.querySelectorAll(".fill").forEach((f,i)=>{ f.className="fill"; f.style.width=(sl[i].v/sl[0].v*100)+"%"; });
+    // ödeme yöntemleri
+    const pays = {}; items.forEach(r => { const k = r.pay || "diger"; pays[k] = (pays[k]||0) + (r.total||0); });
+    const pl = Object.entries(pays).sort((a,b)=>b[1]-a[1]), pOut = $("payOut"); pOut.innerHTML = "";
+    const ptot = sumBy(pl, x=>x[1]);
+    if (!pl.length) pOut.append(el("div","note","Henüz veri yok."));
+    pl.forEach(([k,v]) => { const bb = barEl(payOf(k).e+"  "+payOf(k).n, fmt0(v)+"  ·  %"+Math.round(v/ptot*100), 0); bb.querySelector(".fill").style.width = (v/pl[0][1]*100)+"%"; pOut.append(bb); });
+    // garanti
     const wOut=$("warrOut"); wOut.innerHTML="";
     const now = new Date(today()); const lim = new Date(now); lim.setDate(lim.getDate()+60);
     const ws = state.receipts.filter(r=>r.warranty && new Date(r.warranty)>=now && new Date(r.warranty)<=lim).sort((a,c)=>a.warranty.localeCompare(c.warranty));
@@ -631,7 +1034,7 @@
 
   function renderCalc(items){
     const elig = items.filter(isEligible);
-    const sag = sum(elig.filter(r=>r.cat==="saglik")), egi = sum(elig.filter(r=>r.cat==="egitim"));
+    const sag = sumBy(elig.filter(r=>r.cat==="saglik"), r=>r.total), egi = sumBy(elig.filter(r=>r.cat==="egitim"), r=>r.total);
     const missing = items.filter(r=>isTaxCat(r) && !isEligible(r));
     const income = state.settings.income || 0, rate = parseInt(state.settings.rate)/100;
     const cap = income*0.10, ded = income ? Math.min(sag+egi, cap) : 0;
@@ -642,7 +1045,7 @@
     line("Yasal üst sınır (gelirin %10'u)", income ? fmt(cap) : "gelirini gir");
     line("Matrahtan düşülecek tutar", income ? fmt(ded) : "—");
     line("Tahmini vergi avantajın", income ? fmt(ded*rate) : "—", "total");
-    if (missing.length) { const n=el("div","elig no"); n.style.marginTop="12px"; n.textContent="⚠️ "+missing.length+" sağlık/eğitim kaydın ("+fmt(sum(missing))+") fişle alınmış görünüyor. Bunlar indirime girmez; bir dahaki sefere adına fatura iste."; out.append(n); }
+    if (missing.length) { const n=el("div","elig no"); n.style.marginTop="12px"; n.textContent="⚠️ "+missing.length+" sağlık/eğitim kaydın ("+fmt(sumBy(missing,r=>r.total))+") fişle alınmış görünüyor. Bunlar indirime girmez; bir dahaki sefere adına fatura iste."; out.append(n); }
     if (income && sag+egi > cap) out.append(el("div","note","Harcamaların %10 sınırını aşıyor; aşan kısım indirilemez ve sonraki yıla devretmez."));
   }
 
@@ -657,14 +1060,12 @@
       new Notification(title, opts); return true;
     } catch(e){ return false; }
   }
-  // Uygulama içi uyarılar (bildirim izni olmasa da görünür)
   function addInAppAlert(key, text, level){
     const list = ls.get("fd.inapp", []);
-    if (!list.some(a=>a.key===key)) { list.unshift({key, text, level, at:Date.now()}); ls.set("fd.inapp", list.slice(0,10)); }
+    if (!list.some(a=>a.key===key)) { list.unshift({key, text, level, at:Date.now()}); ls.set("fd.inapp", list.slice(0,12)); }
   }
   function renderAlerts(){
-    const ym = ymOf(new Date());
-    const list = ls.get("fd.inapp", []).filter(a => a.key.startsWith(ym) || a.key.startsWith("war:"));
+    const list = ls.get("fd.inapp", []).filter(a => Date.now() - (a.at||0) < 35*864e5);
     const out = $("alertsOut"); out.innerHTML = "";
     list.slice(0,3).forEach(a => {
       const d = el("div","alert"+(a.level==="red"?" red":"")); d.append(el("span",null,a.text));
@@ -687,6 +1088,13 @@
       if (ratio >= 1) await fire(ym+":budget100", "🚨 Aylık bütçeni aştın", mName+" ayında "+fmt0(s.cur)+" harcadın. Bütçen "+fmt0(st.budget)+".", "red");
       else if (ratio >= 0.8) await fire(ym+":budget80", "⚠️ Bütçenin %"+Math.round(ratio*100)+"'ine geldin", "Bu ay "+fmt0(s.cur)+" harcadın, "+fmt0(st.budget-s.cur)+" kaldı.");
     }
+    if (st.aBudget) for (const [k,v] of Object.entries(st.catBudgets||{})) {
+      if (!(v > 0)) continue; const c = spent(ym, r=>r.cat===k), ratio = c/v, n = catOf(k).n;
+      if (ratio >= 1) await fire(ym+":cb100:"+k, "🚨 "+n+" bütçesi aşıldı", "Bu ay "+fmt0(c)+" harcadın, sınırın "+fmt0(v)+".", "red");
+      else if (ratio >= 0.8) await fire(ym+":cb80:"+k, "⚠️ "+n+" bütçesinin %"+Math.round(ratio*100)+"'i doldu", fmt0(v-c)+" kaldı.");
+    }
+    const inc = incomeIn(ym);
+    if (st.aBudget && inc > 0 && s.cur > inc) await fire(ym+":overinc", "🚨 Gelirinden fazla harcadın", "Bu ay gelir "+fmt0(inc)+", gider "+fmt0(s.cur)+".", "red");
     if (st.aMonth) {
       if (s.prevTotal > 0 && s.cur > s.prevTotal)
         await fire(ym+":overprev", "📈 Geçen ayın toplamını geçtin", "Bu ay "+fmt0(s.cur)+" harcadın; geçen ayın tamamı "+fmt0(s.prevTotal)+" idi.", "red");
@@ -696,16 +1104,22 @@
       }
     }
     if (st.aCat) {
-      const cur = monthItems(ym);
-      const cats = [...new Set(cur.map(r=>r.cat))];
-      for (const c of cats) {
-        const vals = [];
-        for (let i=1;i<=3;i++){ const d=new Date(s.now.getFullYear(), s.now.getMonth()-i, 1); const v=sum(monthItems(ymOf(d)).filter(r=>r.cat===c)); if (v>0) vals.push(v); }
+      for (const c of CATS) {
+        const now = spent(ym, r=>r.cat===c.k); if (!now) continue;
+        const vals = []; for (let i=1;i<=3;i++){ const v = spent(addMonths(ym,-i), r=>r.cat===c.k); if (v>0) vals.push(v); }
         if (!vals.length) continue;
-        const avg = vals.reduce((a,b)=>a+b,0)/vals.length, now = sum(cur.filter(r=>r.cat===c));
-        if (now > avg*1.5 && now-avg >= 500)
-          await fire(ym+":cat:"+c, "📊 "+catOf(c).n+" harcaman arttı", "Bu ay "+fmt0(now)+"; son aylarda ortalama "+fmt0(avg)+" idi.");
+        const avg = sumBy(vals)/vals.length;
+        if (now > avg*1.5 && now-avg >= 500) await fire(ym+":cat:"+c.k, "📊 "+c.n+" harcaman arttı", "Bu ay "+fmt0(now)+"; son aylarda ortalama "+fmt0(avg)+" idi.");
       }
+    }
+    if (st.aRec) {
+      for (const u of upcoming(3)) {
+        const isInc = u.rc.type === "income";
+        if (u.d < 0) { if (!isInc) await fire("rec:"+u.rc.id+":"+u.ym+":late", "⏰ Ödeme günü geçti", u.rc.name+" ("+fmt0(u.rc.amount)+") "+Math.abs(u.d)+" gün gecikti.", "red"); }
+        else await fire("rec:"+u.rc.id+":"+u.ym, isInc ? "💰 "+u.rc.name+" "+dueText(u.d) : "📅 "+u.rc.name+" ödemesi "+dueText(u.d), fmt0(u.rc.amount)+" · "+fmtDate(u.due));
+      }
+      for (const x of recs("debt")) { if (x.closed || !x.due) continue; const d = dayDiff(x.due, today());
+        if (d <= 3) await fire("debt:"+x.id+":"+x.due, x.dir==="alacak" ? "🤝 "+x.person+" sana borcunu ödemeli" : "🤝 "+x.person+"'e borcunu ödeme günü", fmt0(x.amount)+" · vade "+fmtDate(x.due)+" ("+dueText(d)+")"); }
     }
     if (st.aWar) {
       const now = new Date(today());
@@ -717,28 +1131,18 @@
     }
     renderAlerts();
   }
-
   function renderPerm(){
     const p = $("permState"), b = $("permBtn");
-    if (!notifSupported()) {
-      p.className = "perm no";
+    if (!notifSupported()) { p.className = "perm no";
       p.textContent = isIOS() && !isStandalone() ? "iPhone'da bildirim için önce uygulamayı ana ekrana ekle (yukarıdaki adımlar), sonra uygulamayı oradan aç." : "Bu tarayıcı bildirim desteklemiyor. Uyarılar uygulamanın içinde görünecek.";
-      b.classList.add("hidden"); return;
-    }
+      b.classList.add("hidden"); return; }
     const s = Notification.permission;
     if (s === "granted") { p.className="perm ok"; p.textContent="✓ Bildirimler açık"; b.classList.add("hidden"); }
     else if (s === "denied") { p.className="perm no"; p.textContent="Bildirimler kapalı. Telefonun Ayarlar > Bildirimler bölümünden bu uygulamaya izin ver."; b.classList.add("hidden"); }
     else { p.className="perm no"; p.textContent="Bildirimler henüz kapalı."; b.classList.remove("hidden"); }
   }
-  $("permBtn").onclick = async () => {
-    try { await Notification.requestPermission(); } catch(e){}
-    renderPerm();
-    if (Notification.permission === "granted") { toast("Bildirimler açıldı ✓"); checkAlerts(); }
-  };
-  $("testNotif").onclick = async () => {
-    const ok = await notify("🧾 Fiş Defteri", "Bildirimler çalışıyor. Harcaman artınca sana haber vereceğim.", "test");
-    toast(ok ? "Deneme bildirimi gönderildi" : "Önce bildirimlere izin ver.");
-  };
+  $("permBtn").onclick = async () => { try { await Notification.requestPermission(); } catch(e){} renderPerm(); if (Notification.permission === "granted") { toast("Bildirimler açıldı ✓"); checkAlerts(); } };
+  $("testNotif").onclick = async () => { const ok = await notify("🧾 Fiş Defteri", "Bildirimler çalışıyor. Harcaman artınca ve ödeme günü gelince sana haber vereceğim.", "test"); toast(ok ? "Deneme bildirimi gönderildi" : "Önce bildirimlere izin ver."); };
 
   // ================= Kurulum (PWA) =================
   const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
@@ -1018,7 +1422,8 @@ Kurallar:
     ls.set("fd.gemKey", ""); ls.set("fd.gemModel", null); renderGem(); toast("Anahtar silindi");
   };
 
-  // ================= Form =================
+
+  // ================= Gider formu =================
   let editing = null, pendingBlob = null;
   const blobToImage = b => new Promise((res, rej) => { const u = URL.createObjectURL(b); const i = new Image(); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = e => { URL.revokeObjectURL(u); rej(e); }; i.src = u; });
   async function compress(file, max, q){
@@ -1037,10 +1442,11 @@ Kurallar:
   function openForm(r){
     editing = r || null; pendingBlob = null;
     if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
-    $("formTitle").textContent = r ? "Kaydı düzenle" : "Yeni fiş / fatura";
+    $("formTitle").textContent = r ? "Kaydı düzenle" : "Yeni gider";
     $("fStore").value = r?.store || ""; $("fDate").value = r?.date || today();
     $("fTotal").value = numToInput(r?.total); $("fVat").value = numToInput(r?.vat);
     $("fCat").value = r?.cat || "market"; $("fDoc").value = r?.doc || "fis";
+    $("fPay").value = r?.pay || ls.get("fd.lastPay", "kart"); $("fInst").value = String(parseInt(r?.inst)||1);
     $("fWho").value = r?.who || "ben"; $("fNo").value = r?.no || ""; $("fWar").value = r?.warranty || ""; $("fNote").value = r?.note || "";
     $("delBtn").classList.toggle("hidden", !r);
     $("ocrBox").classList.remove("show"); $("ocrMsg").textContent = ""; $("ocrRetry").classList.add("hidden");
@@ -1078,13 +1484,12 @@ Kurallar:
     const wasEdit = !!editing;
     const r = Object.assign({}, editing || {id:newId(), createdAt:Date.now()}, {
       store: $("fStore").value.trim(), date: $("fDate").value || today(), total, vat: parseNum($("fVat").value),
-      cat: $("fCat").value, doc: $("fDoc").value, who: $("fWho").value, no: $("fNo").value.trim(),
+      cat: $("fCat").value, doc: $("fDoc").value, pay: $("fPay").value, inst: parseInt($("fInst").value)||1, who: $("fWho").value, no: $("fNo").value.trim(),
       warranty: $("fWar").value || "", note: $("fNote").value.trim(), updatedAt: Date.now()
     });
     try {
       if (pendingBlob) { const small = await compress(pendingBlob, 1400, 0.75); await DB.putPhoto(r.id, small); dropPhotoUrl(r.id); r.hasPhoto = true; }
-      await DB.put(r);
-      const i = state.receipts.findIndex(x=>x.id===r.id); if (i>=0) state.receipts[i]=r; else state.receipts.push(r);
+      await saveReceipt(r); ls.set("fd.lastPay", r.pay);
       const y = parseInt(r.date.slice(0,4)); if (y) state.year = y;
       closeForm(); render(); toast(wasEdit ? "Güncellendi ✓" : "Kaydedildi ✓");
       checkAlerts();
@@ -1110,44 +1515,169 @@ Kurallar:
     catch(e){ toast("Silinemedi, tekrar dene."); }
   };
 
+  // ================= Genel form (gelir, düzenli ödeme, hedef, borç, bütçe) =================
+  let genSave = null, genDelete = null;
+  function openGen(title, fields, onSave, onDelete, lead){
+    $("genTitle").textContent = title;
+    $("genLead").textContent = lead || ""; $("genLead").classList.toggle("hidden", !lead);
+    const box = $("genFields"); box.innerHTML = "";
+    fields.forEach(f => {
+      const w = el("div","f" + (f.full ? " full" : "")); if (f.showIf) w.dataset.showIf = f.showIf;
+      const lab = el("label", null, f.label); lab.htmlFor = "g_" + f.id; w.append(lab);
+      let inp;
+      if (f.type === "select") { inp = el("select"); f.options.forEach(o => { const op = el("option", null, o.n); op.value = o.k; inp.append(op); }); inp.value = f.value != null ? String(f.value) : f.options[0].k; }
+      else if (f.type === "textarea") { inp = el("textarea"); inp.rows = 2; inp.value = f.value || ""; }
+      else { inp = el("input"); inp.type = f.type === "money" || f.type === "int" ? "text" : (f.type || "text");
+        if (f.type === "money") { inp.inputMode = "decimal"; inp.value = numToInput(f.value); inp.placeholder = "0,00"; }
+        else if (f.type === "int") { inp.inputMode = "numeric"; inp.value = f.value != null ? String(f.value) : ""; }
+        else inp.value = f.value || ""; if (f.placeholder) inp.placeholder = f.placeholder; }
+      inp.id = "g_" + f.id; w.append(inp);
+      if (f.hint) w.append(el("div","hint", f.hint));
+      box.append(w);
+    });
+    const applyShow = () => box.querySelectorAll("[data-show-if]").forEach(w => { const [k, v] = w.dataset.showIf.split("="); w.classList.toggle("hidden", ($("g_"+k)||{}).value !== v); });
+    box.querySelectorAll("select").forEach(s => s.addEventListener("change", applyShow)); applyShow();
+    genSave = onSave; genDelete = onDelete || null;
+    $("genDel").classList.toggle("hidden", !onDelete);
+    $("genBg").classList.add("show");
+  }
+  const gv = id => { const e = $("g_"+id); return e ? e.value : ""; };
+  const closeGen = () => { $("genBg").classList.remove("show"); genSave = genDelete = null; };
+  $("genCancel").onclick = closeGen;
+  $("genBg").addEventListener("click", e => { if (e.target === $("genBg")) closeGen(); });
+  $("genForm").addEventListener("submit", async e => { e.preventDefault(); if (!genSave) return;
+    const b = $("genSave"); b.disabled = true;
+    try { const ok = await genSave(); if (ok !== false) { closeGen(); render(); checkAlerts(); } }
+    catch(err){ toast("Kaydedilemedi, tekrar dene."); } finally { b.disabled = false; } });
+  $("genDel").onclick = async () => { if (!genDelete) return; if (!await confirmBox("Bu kayıt silinsin mi? Bu geri alınamaz.", "Sil")) return;
+    try { await genDelete(); closeGen(); render(); toast("Silindi"); } catch(e){ toast("Silinemedi."); } };
+
+  function openIncomeForm(x){
+    openGen(x ? "Geliri düzenle" : "Gelir ekle", [
+      {id:"amount", label:"Tutar (₺)", type:"money", value:x?.amount},
+      {id:"date", label:"Tarih", type:"date", value:x?.date || today()},
+      {id:"src", label:"Gelir türü", type:"select", options:INC_SRC, value:x?.src || "maas"},
+      {id:"note", label:"Açıklama", value:x?.note, placeholder:"örn. Kasım maaşı"},
+    ], async () => {
+      const amount = parseNum(gv("amount")); if (!amount) { toast("Tutarı gir."); return false; }
+      await saveRecord(Object.assign({}, x || {id:newId("i"), kind:"income"}, {amount, date: gv("date") || today(), src: gv("src"), note: gv("note").trim()}));
+      toast(x ? "Güncellendi ✓" : "Gelir eklendi ✓");
+    }, x ? () => deleteRecord(x.id) : null, x ? null : "Her ay aynı gün gelen maaşı \"Düzenli ödemeler\"e gelir olarak eklersen her ay tek dokunuşla işlenir.");
+  }
+  function openRecForm(rc){
+    const dayOpts = Array.from({length:31}, (_,i)=>({k:String(i+1), n:String(i+1)}));
+    openGen(rc ? "Düzenli kaydı düzenle" : "Düzenli ödeme / gelir ekle", [
+      {id:"type", label:"Tür", type:"select", options:[{k:"expense",n:"Gider (ödeme)"},{k:"income",n:"Gelir (maaş vb.)"}], value:rc?.type || "expense"},
+      {id:"name", label:"Adı", value:rc?.name, placeholder:"örn. Kira, Netflix, Maaş", full:true},
+      {id:"amount", label:"Tutar (₺)", type:"money", value:rc?.amount},
+      {id:"freq", label:"Sıklık", type:"select", options:[{k:"monthly",n:"Her ay"},{k:"yearly",n:"Her yıl"}], value:rc?.freq || "monthly"},
+      {id:"day", label:"Ayın kaçında?", type:"select", options:dayOpts, value:String(rc?.day || new Date().getDate())},
+      {id:"month", label:"Hangi ay?", type:"select", options:MONTHS.map((m,i)=>({k:String(i+1), n:m})), value:String(rc?.month || (new Date().getMonth()+1)), showIf:"freq=yearly"},
+      {id:"cat", label:"Kategori", type:"select", options:CATS.map(c=>({k:c.k, n:c.e+"  "+c.n})), value:rc?.cat || "faturalar", showIf:"type=expense"},
+      {id:"pay", label:"Ödeme yöntemi", type:"select", options:PAYS.map(p=>({k:p.k, n:p.n})), value:rc?.pay || "banka", showIf:"type=expense"},
+      {id:"src", label:"Gelir türü", type:"select", options:INC_SRC.map(p=>({k:p.k, n:p.n})), value:rc?.src || "maas", showIf:"type=income"},
+      {id:"active", label:"Durum", type:"select", options:[{k:"1",n:"Aktif"},{k:"0",n:"Durduruldu"}], value:rc && rc.active===false ? "0" : "1"},
+    ], async () => {
+      const name = gv("name").trim(), amount = parseNum(gv("amount"));
+      if (!name) { toast("Adını yaz."); return false; } if (!amount) { toast("Tutarı gir."); return false; }
+      await saveRecord(Object.assign({}, rc || {id:newId("p"), kind:"rec", paid:[], start: today()}, {
+        type: gv("type"), name, amount, freq: gv("freq"), day: parseInt(gv("day")), month: parseInt(gv("month")), cat: gv("cat"), pay: gv("pay"), src: gv("src"), active: gv("active") === "1" }));
+      toast(rc ? "Güncellendi ✓" : "Eklendi ✓");
+    }, rc ? () => deleteRecord(rc.id) : null, rc ? null : "Günü gelince bildirim gönderirim. \"Öde\"ye basınca gidere (gelirse gelire) otomatik işlenir.");
+  }
+  function openGoalForm(g){
+    openGen(g ? "Hedefi düzenle" : "Tasarruf hedefi ekle", [
+      {id:"name", label:"Hedef", value:g?.name, placeholder:"örn. Araba peşinatı", full:true},
+      {id:"emoji", label:"Simge", type:"select", options:["🎯","🏠","🚗","✈️","💍","🎓","💻","📱","🛡️","👶","🐷"].map(e=>({k:e,n:e})), value:g?.emoji || "🎯"},
+      {id:"target", label:"Hedef tutar (₺)", type:"money", value:g?.target},
+      {id:"saved", label:"Şu an biriken (₺)", type:"money", value:g?.saved},
+      {id:"deadline", label:"Hedef tarih (isteğe bağlı)", type:"month", value:g?.deadline || ""},
+    ], async () => {
+      const name = gv("name").trim(), target = parseNum(gv("target")); if (!name) { toast("Hedefin adını yaz."); return false; } if (!target) { toast("Hedef tutarı gir."); return false; }
+      await saveRecord(Object.assign({}, g || {id:newId("g"), kind:"goal"}, {name, emoji: gv("emoji"), target, saved: parseNum(gv("saved")), deadline: gv("deadline")}));
+      toast(g ? "Güncellendi ✓" : "Hedef eklendi ✓");
+    }, g ? () => deleteRecord(g.id) : null);
+  }
+  function openGoalMoney(g, sign){
+    openGen((sign>0 ? "➕ Para ekle: " : "➖ Para çek: ") + g.name, [{id:"amt", label:"Tutar (₺)", type:"money", full:true}], async () => {
+      const a = parseNum(gv("amt")); if (!a) { toast("Tutarı gir."); return false; }
+      const saved = Math.max(0, r2((g.saved||0) + sign*a));
+      await saveRecord(Object.assign({}, g, {saved}));
+      toast(saved >= g.target ? "🎉 Hedefe ulaştın!" : "Kaydedildi ✓");
+    }, null, "Şu an biriken: " + fmt(g.saved||0) + " / " + fmt(g.target));
+  }
+  function openDebtForm(x){
+    openGen(x ? "Borç / alacağı düzenle" : "Borç / alacak ekle", [
+      {id:"dir", label:"Tür", type:"select", options:[{k:"alacak",n:"Ben borç verdim (alacağım)"},{k:"borc",n:"Ben borç aldım (borcum)"}], value:x?.dir || "alacak", full:true},
+      {id:"person", label:"Kişi", value:x?.person, placeholder:"örn. Ahmet"},
+      {id:"amount", label:"Tutar (₺)", type:"money", value:x?.amount},
+      {id:"date", label:"Tarih", type:"date", value:x?.date || today()},
+      {id:"due", label:"Vade (isteğe bağlı)", type:"date", value:x?.due || ""},
+      {id:"note", label:"Not", value:x?.note, full:true},
+    ], async () => {
+      const person = gv("person").trim(), amount = parseNum(gv("amount")); if (!person) { toast("Kişinin adını yaz."); return false; } if (!amount) { toast("Tutarı gir."); return false; }
+      await saveRecord(Object.assign({}, x || {id:newId("d"), kind:"debt", closed:false}, {dir: gv("dir"), person, amount, date: gv("date"), due: gv("due"), note: gv("note").trim()}));
+      toast(x ? "Güncellendi ✓" : "Eklendi ✓");
+    }, x ? () => deleteRecord(x.id) : null);
+  }
+  function openBudgetsForm(){
+    const cb = state.settings.catBudgets || {};
+    openGen("Aylık bütçeler", [{id:"__total", label:"🧮 Toplam aylık bütçe (₺)", type:"money", value:state.settings.budget, full:true}]
+      .concat(CATS.map(c => ({id:c.k, label:c.e+"  "+c.n, type:"money", value:cb[c.k]}))), async () => {
+        state.settings.budget = parseNum(gv("__total"));
+        const nb = {}; CATS.forEach(c => { const v = parseNum(gv(c.k)); if (v) nb[c.k] = v; });
+        state.settings.catBudgets = nb; saveSettings(); toast("Bütçeler kaydedildi ✓");
+      }, null, "Sınır koymak istemediğin kategoriyi boş bırak. Her kategoride %80'e gelince ve aşınca uyarırım.");
+  }
+  $("addIncomeBtn").onclick = () => openIncomeForm(null);
+  $("addRecBtn").onclick = () => openRecForm(null);
+  $("addGoalBtn").onclick = () => openGoalForm(null);
+  $("addDebtBtn").onclick = () => openDebtForm(null);
+  $("editBudgetsBtn").onclick = openBudgetsForm;
+
+  // + seçici
+  const closeChooser = () => $("chooserBg").classList.remove("show");
+  $("addBtn").onclick = () => $("chooserBg").classList.add("show");
+  $("chooserBg").addEventListener("click", e => { if (e.target === $("chooserBg")) closeChooser(); });
+  $("chPhoto").onclick = () => { closeChooser(); openForm(null); $("file").click(); };
+  $("chManual").onclick = () => { closeChooser(); openForm(null); $("fDoc").value = "diger"; setTimeout(()=>$("fStore").focus(), 150); };
+  $("chIncome").onclick = () => { closeChooser(); openIncomeForm(null); };
+
   // ================= Dosya kaydetme =================
   async function saveFile(blob, name){
     try {
       const file = new File([blob], name, {type: blob.type});
-      if (navigator.canShare && navigator.canShare({files:[file]}) && /android|iphone|ipad/i.test(navigator.userAgent)) {
-        await navigator.share({files:[file], title:name}); return true;
-      }
+      if (navigator.canShare && navigator.canShare({files:[file]}) && /android|iphone|ipad/i.test(navigator.userAgent)) { await navigator.share({files:[file], title:name}); return true; }
     } catch(e){ if (e && e.name === "AbortError") return false; }
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
     document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
     return true;
   }
-
-  // CSV
   $("csvBtn").onclick = async () => {
     const items = yearItems().sort((a,b)=>(a.date||"").localeCompare(b.date||""));
-    if (!items.length) { toast(state.year+" yılında kayıt yok."); return; }
+    const incs = recs("income").filter(x=>(x.date||"").slice(0,4)===String(state.year)).sort((a,b)=>a.date.localeCompare(b.date));
+    if (!items.length && !incs.length) { toast(state.year+" yılında kayıt yok."); return; }
     const esc = v => { v = v==null ? "" : String(v); return /[;"\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
     const num = n => (n||0).toFixed(2).replace(".",",");
     const who = {ben:"Kendim",es:"Eşim",cocuk:"Çocuğum",diger:"Diğer"};
-    const head = ["Tarih","İşyeri","Kategori","Belge türü","Belge no","Kimin için","Tutar (KDV dahil)","KDV","Vergiye uygun","Garanti bitişi","Not"];
-    const rows = items.map(r => [r.date, r.store, catOf(r.cat).n, docOf(r.doc).n, r.no, who[r.who]||"", num(r.total), num(r.vat), isEligible(r)?"Evet":"Hayır", r.warranty, r.note].map(esc).join(";"));
-    const csv = "﻿" + [head.join(";")].concat(rows).join("\r\n");
-    await saveFile(new Blob([csv], {type:"text/csv;charset=utf-8"}), "fis-fatura-"+state.year+".csv");
+    const head = ["Tür","Tarih","İşyeri / Açıklama","Kategori","Tutar (KDV dahil)","KDV","Ödeme yöntemi","Taksit","Belge türü","Belge no","Kimin için","Vergiye uygun","Garanti bitişi","Not"];
+    const rows = items.map(r => ["Gider", r.date, r.store, catOf(r.cat).n, num(r.total), num(r.vat), payOf(r.pay).n, parseInt(r.inst)||1, docOf(r.doc).n, r.no, who[r.who]||"", isEligible(r)?"Evet":"Hayır", r.warranty, r.note].map(esc).join(";"))
+      .concat(incs.map(x => ["Gelir", x.date, x.note || srcOf(x.src).n, srcOf(x.src).n, num(x.amount), "", "", "", "", "", "", "", "", ""].map(esc).join(";")));
+    await saveFile(new Blob(["﻿" + [head.join(";")].concat(rows).join("\r\n")], {type:"text/csv;charset=utf-8"}), "fis-fatura-"+state.year+".csv");
   };
 
-  // Yedek
+  // ================= Yedek =================
   const blobToDataUrl = b => new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
   $("backupBtn").onclick = async () => {
     const btn = $("backupBtn"); btn.disabled = true; btn.textContent = "Hazırlanıyor…";
     try {
       const photos = {};
       for (const r of state.receipts) if (r.hasPhoto) { const b = await DB.getPhoto(r.id); if (b) photos[r.id] = await blobToDataUrl(b); }
-      const data = { app:"fis-fatura-defteri", version:1, exportedAt:new Date().toISOString(), settings:state.settings, receipts:state.receipts, photos };
+      const data = { app:"fis-fatura-defteri", version:2, exportedAt:new Date().toISOString(), settings:state.settings, receipts:state.receipts, records:state.records, photos };
       const ok = await saveFile(new Blob([JSON.stringify(data)], {type:"application/json"}), "fis-defteri-yedek-"+today()+".json");
       if (ok) { ls.set("fd.lastBackup", Date.now()); renderBackup(); }
     } catch(e){ toast("Yedek alınamadı."); }
-    finally { btn.disabled = false; btn.textContent = "Yedek al (fotoğraflar dahil)"; }
+    finally { btn.disabled = false; btn.textContent = "Yedek al (her şey dahil)"; }
   };
   $("restoreBtn").onclick = () => $("restoreFile").click();
   $("restoreFile").addEventListener("change", async e => {
@@ -1155,15 +1685,15 @@ Kurallar:
     let data;
     try { data = JSON.parse(await f.text()); } catch(err){ toast("Bu dosya okunamadı."); return; }
     if (!data || data.app !== "fis-fatura-defteri" || !Array.isArray(data.receipts)) { toast("Bu bir Fiş Defteri yedeği değil."); return; }
-    if (!await confirmBox(data.receipts.length+" kayıt yedekten geri yüklensin mi? Aynı kayıtlar güncellenir, mevcut diğer kayıtların silinmez.", "Geri yükle")) return;
+    const nRec = (data.records||[]).length;
+    if (!await confirmBox(data.receipts.length+" harcama"+(nRec?" ve "+nRec+" diğer kayıt":"")+" yedekten geri yüklensin mi? Aynı kayıtlar güncellenir, mevcut diğer kayıtların silinmez.", "Geri yükle")) return;
     try {
-      for (const r of data.receipts) {
-        if (!r || !r.id) continue;
+      for (const r of data.receipts) { if (!r || !r.id) continue;
         const ph = data.photos && data.photos[r.id];
         if (ph) { const b = await (await fetch(ph)).blob(); await DB.putPhoto(r.id, b); dropPhotoUrl(r.id); }
-        await DB.put(r);
-      }
-      if (data.settings) { state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings); saveSettings(); fillSettings(); }
+        await DB.put(r); }
+      for (const x of (data.records||[])) if (x && x.id && x.kind) await DB.recPut(x);
+      if (data.settings) { state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings); if (!state.settings.catBudgets) state.settings.catBudgets = {}; saveSettings(); fillSettings(); }
       await load(); toast("Yedek geri yüklendi ✓");
     } catch(err){ toast("Geri yükleme yarıda kaldı. Tekrar dene."); }
   });
@@ -1172,17 +1702,68 @@ Kurallar:
     $("lastBackup").textContent = t ? "Son yedek: " + new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"}) : "Henüz yedek almadın.";
   }
 
+  // ================= Uygulama kilidi =================
+  const hashPin = async p => { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("fd-pin:" + p)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); };
+  let lockMode = null, pinBuf = "", pinFirst = "", hiddenAt = 0;
+  function showLock(mode){
+    lockMode = mode; pinBuf = ""; pinFirst = "";
+    $("lockTitle").textContent = mode === "unlock" ? "Şifreni gir" : "Yeni 4 haneli şifre";
+    $("lockSub").textContent = mode === "unlock" ? "Fiş & Fatura Defteri" : "Unutmayacağın bir şifre seç";
+    $("lockForgot").classList.toggle("hidden", mode !== "unlock");
+    $("lockCancel").classList.toggle("hidden", mode === "unlock");
+    drawDots(); $("lock").classList.add("show");
+  }
+  function drawDots(){ $("dots").querySelectorAll("i").forEach((d,i)=>d.classList.toggle("on", i < pinBuf.length)); }
+  function shake(){ const d = $("dots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); pinBuf = ""; setTimeout(drawDots, 300); }
+  let pinBusy = false;
+  async function pinDigit(k){
+    if (pinBusy) return;
+    if (k === "del") { pinBuf = pinBuf.slice(0,-1); drawDots(); return; }
+    if (pinBuf.length >= 4) return;
+    pinBuf += k; drawDots();
+    if (pinBuf.length < 4) return;
+    const val = pinBuf; pinBusy = true;
+    try {
+      await new Promise(r=>setTimeout(r,120));
+      if (lockMode === "unlock") {
+        if (await hashPin(val) === ls.get("fd.pin", "")) { $("lock").classList.remove("show"); lockMode = null; pinBuf = ""; }
+        else shake();
+      } else if (lockMode === "set") {
+        if (!pinFirst) { pinFirst = val; pinBuf = ""; $("lockTitle").textContent = "Şifreyi tekrar gir"; drawDots(); }
+        else if (pinFirst === val) { ls.set("fd.pin", await hashPin(val)); $("lock").classList.remove("show"); lockMode = null; pinBuf = ""; renderPin(); toast("Uygulama kilidi açıldı ✓"); }
+        else { pinFirst = ""; $("lockTitle").textContent = "Eşleşmedi, yeniden dene"; shake(); }
+      }
+    } catch(e) { pinBuf = ""; drawDots(); toast("Şifre işlenemedi, tekrar dene."); }
+    finally { pinBusy = false; }
+  }
+  (() => { const p = $("pad"); ["1","2","3","4","5","6","7","8","9","","0","del"].forEach(k => { const b = el("button", k ? "" : "blank", k === "del" ? "⌫" : k); b.type = "button"; if (k) b.onclick = () => pinDigit(k); else b.disabled = true; p.append(b); }); })();
+  $("lockCancel").onclick = () => { $("lock").classList.remove("show"); lockMode = null; };
+  $("lockForgot").onclick = async () => {
+    $("lock").classList.remove("show");
+    const ok = await confirmBox("Şifreyi unuttuysan kilidi kaldırmanın tek yolu bu telefondaki TÜM kayıtları silmek. Yedeğin varsa sonra geri yükleyebilirsin. Her şey silinsin mi?", "Hepsini sil");
+    if (!ok) { showLock("unlock"); return; }
+    try { await DB.wipe(); } catch(e){}
+    ["fd.pin","fd.settings","fd.inapp","fd.sent","fd.gemKey","fd.gemModel"].forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+    location.reload();
+  };
+  function renderPin(){
+    const on = !!ls.get("fd.pin", "");
+    $("pinState").className = "perm " + (on ? "ok" : "no"); $("pinState").textContent = on ? "✓ Kilit açık: uygulama açılırken şifre sorulur" : "Kilit kapalı";
+    $("pinSet").textContent = on ? "Şifreyi değiştir" : "Şifre koy"; $("pinOff").classList.toggle("hidden", !on);
+  }
+  $("pinSet").onclick = () => showLock("set");
+  $("pinOff").onclick = async () => { if (!await confirmBox("Uygulama kilidi kaldırılsın mı?", "Kaldır")) return; ls.set("fd.pin", ""); renderPin(); toast("Kilit kaldırıldı"); };
+  if (ls.get("fd.pin", "")) showLock("unlock");
+
   // ================= Ayarlar ve gezinme =================
   function fillSettings(){
     const s = state.settings;
     $("inc").value = s.income ? numToInput(s.income) : ""; $("rate").value = s.rate || "27";
-    $("budget").value = s.budget ? numToInput(s.budget) : "";
-    ["aBudget","aMonth","aCat","aWar"].forEach(k => $(k).checked = !!s[k]);
+    ["aBudget","aMonth","aCat","aRec","aWar"].forEach(k => $(k).checked = s[k] !== false);
   }
   $("inc").addEventListener("input", () => { state.settings.income = parseNum($("inc").value); saveSettings(); renderCalc(yearItems()); });
   $("rate").addEventListener("change", () => { state.settings.rate = $("rate").value; saveSettings(); renderCalc(yearItems()); });
-  $("budget").addEventListener("change", () => { state.settings.budget = parseNum($("budget").value); saveSettings(); render(); checkAlerts(); });
-  ["aBudget","aMonth","aCat","aWar"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); }));
+  ["aBudget","aMonth","aCat","aRec","aWar"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); }));
 
   let lastTab = "list";
   function show(v){
@@ -1191,21 +1772,25 @@ Kurallar:
     window.scrollTo({top:0});
   }
   document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { lastTab = b.dataset.v; show(b.dataset.v); }));
-  $("setBtn").onclick = () => { renderPerm(); renderBackup(); renderGem(); show("settings"); };
+  $("setBtn").onclick = () => { renderPerm(); renderBackup(); renderGem(); renderPin(); show("settings"); };
   $("backBtn").onclick = () => show(lastTab);
-  $("addBtn").onclick = () => { openForm(null); $("file").click(); };
   $("yearSel").onchange = e => { state.year = parseInt(e.target.value); render(); };
   $("q").addEventListener("input", e => { state.q = e.target.value; renderList(yearItems()); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) { renderMonthCard(); checkAlerts(); } });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (ls.get("fd.pin", "") && hiddenAt && Date.now() - hiddenAt > 60000 && lockMode !== "set") showLock("unlock");
+    render(); checkAlerts();
+  });
 
   // ================= Başlat =================
   $("ver").textContent = APP_VERSION;
-  $("fCat").innerHTML = ""; CATS.forEach(c=>{ const o=el("option",null,c.e+"  "+c.n); o.value=c.k; $("fCat").append(o); });
-  $("fDoc").innerHTML = ""; DOCS.forEach(d=>{ const o=el("option",null,d.n); o.value=d.k; $("fDoc").append(o); });
+  CATS.forEach(c=>{ const o=el("option",null,c.e+"  "+c.n); o.value=c.k; $("fCat").append(o); });
+  DOCS.forEach(d=>{ const o=el("option",null,d.n); o.value=d.k; $("fDoc").append(o); });
+  PAYS.forEach(p=>{ const o=el("option",null,p.e+"  "+p.n); o.value=p.k; $("fPay").append(o); });
+  [1,2,3,4,5,6,7,8,9,10,11,12,18,24,36].forEach(n=>{ const o=el("option",null, n===1 ? "Tek çekim / peşin" : n+" taksit"); o.value=String(n); $("fInst").append(o); });
   fillSettings();
   load().then(checkAlerts);
-  // Test için dışarı aç
-  window.__fd = { parseReceipt };
+  window.__fd = { parseReceipt, allocs, state };
 })();
 </script>
 </body>
