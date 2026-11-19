@@ -296,6 +296,8 @@
   <section class="view" id="v-budget">
     <div class="card">
       <div class="sec-h"><h2 id="bMonthTitle">Bu ay</h2><button class="mini" id="addIncomeBtn">+ Gelir</button></div>
+      <div class="f" style="margin:12px 0 4px"><label for="pStart">Bütçe dönemi (maaş günü)</label><select id="pStart"></select>
+        <div class="hint" id="bPeriod"></div></div>
       <div class="kpis" style="margin-top:12px">
         <div class="kpi"><small>Gelir</small><b class="pos" id="bIn">₺0</b></div>
         <div class="kpi"><small>Gider</small><b class="neg" id="bOut">₺0</b></div>
@@ -348,10 +350,10 @@
       <div class="legend"><span><i style="background:var(--green)"></i>Gelir</span><span><i style="background:var(--red)"></i>Gider</span></div>
     </div>
     <div class="card">
-      <h2>Bu ayın özeti</h2>
+      <h2 id="rNowTitle">Bu ayın özeti</h2>
       <div class="kpis" style="margin-top:12px">
         <div class="kpi"><small>Günlük ortalama</small><b id="rDaily">₺0</b></div>
-        <div class="kpi"><small>Ay sonu tahmini</small><b id="rProj">₺0</b></div>
+        <div class="kpi"><small id="rProjL">Ay sonu tahmini</small><b id="rProj">₺0</b></div>
         <div class="kpi"><small>Sabit giderler</small><b id="rFixed">₺0</b></div>
         <div class="kpi"><small>Fiş sayısı</small><b id="rCount">0</b></div>
       </div>
@@ -614,7 +616,7 @@
 <script>
 (() => {
   "use strict";
-  const APP_VERSION = "2.0.0";
+  const APP_VERSION = "2.1.0";
   const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 
   // ================= Sabitler =================
@@ -708,7 +710,7 @@
   function dropPhotoUrl(id){ const u = photoUrls.get(id); if (u) { URL.revokeObjectURL(u); photoUrls.delete(id); } }
 
   // ================= Durum =================
-  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, catBudgets:{}, aBudget:true, aMonth:true, aCat:true, aRec:true, aWar:true};
+  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, pStart:"1", catBudgets:{}, aBudget:true, aMonth:true, aCat:true, aRec:true, aWar:true};
   const state = {
     receipts: [], records: [], year: new Date().getFullYear(), cat:"all", taxOnly:false, q:"",
     settings: Object.assign({}, DEFAULT_SETTINGS, ls.get("fd.settings", {}))
@@ -734,11 +736,12 @@
 
   // ================= Hesaplar =================
   // Taksitli alışverişler aylara bölünür; bütçe ve aylık toplamlar buna göre hesaplanır.
+  const addMonthsDate = (ds, n) => { const [y,m,d] = ds.split("-").map(Number); const t = new Date(y, m-1+n, 1); const dim = new Date(t.getFullYear(), t.getMonth()+1, 0).getDate(); return ymd(new Date(t.getFullYear(), t.getMonth(), Math.min(d, dim))); };
   function allocs(r){
-    const n = Math.max(1, Math.min(36, parseInt(r.inst)||1)), total = r.total||0, start = (r.date||today()).slice(0,7);
-    if (n === 1) return [{ym:start, amount:total}];
+    const n = Math.max(1, Math.min(36, parseInt(r.inst)||1)), total = r.total||0, d0 = r.date || today();
+    if (n === 1) return [{ym:d0.slice(0,7), date:d0, amount:total}];
     const per = Math.floor(total/n*100)/100, out = [];
-    for (let i=0;i<n;i++) out.push({ym:addMonths(start,i), amount: i===n-1 ? r2(total - per*(n-1)) : per});
+    for (let i=0;i<n;i++) { const dt = addMonthsDate(d0, i); out.push({ym:dt.slice(0,7), date:dt, amount: i===n-1 ? r2(total - per*(n-1)) : per}); }
     return out;
   }
   const spent = (ym, f) => sumBy(state.receipts.filter(r=>!f||f(r)), r => sumBy(allocs(r).filter(a=>a.ym===ym), a=>a.amount));
@@ -746,15 +749,40 @@
   const incomeIn = ym => sumBy(recs("income").filter(x=>(x.date||"").slice(0,7)===ym), x=>x.amount);
   const yearItems = () => state.receipts.filter(r => (r.date||"").slice(0,4) === String(state.year));
 
+  // ---- Bütçe dönemi: takvim ayı ya da maaş gününden maaş gününe ----
+  const lastBizDay = (y, m) => { const d = new Date(y, m+1, 0); while (d.getDay()===0 || d.getDay()===6) d.setDate(d.getDate()-1); return d; };
+  const dOnly = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const pRule = () => String(state.settings.pStart || "1");
+  const isCal = () => pRule() === "1";
+  function pStartIn(y, m){
+    const rule = pRule(), dim = new Date(y, m+1, 0).getDate();
+    if (rule === "last") return new Date(y, m, dim);
+    if (rule === "lastbiz") return lastBizDay(y, m);
+    return new Date(y, m, Math.min(parseInt(rule)||1, dim));
+  }
+  function periodOf(date){
+    date = dOnly(date || new Date()); let y = date.getFullYear(), m = date.getMonth(), s = pStartIn(y, m);
+    if (date < s) { m--; if (m < 0) { m = 11; y--; } s = pStartIn(y, m); }
+    let ny = y, nm = m + 1; if (nm > 11) { nm = 0; ny++; }
+    const next = pStartIn(ny, nm), end = new Date(next); end.setDate(end.getDate()-1);
+    return { start:s, end, key: ymd(s), days: Math.round((next - s) / 864e5) };
+  }
+  const prevPeriod = p => periodOf(new Date(p.start.getFullYear(), p.start.getMonth(), p.start.getDate()-1));
+  const inP = (ds, p) => !!ds && ds >= ymd(p.start) && ds <= ymd(p.end);
+  const periodLabel = p => isCal() ? MONTHS[p.start.getMonth()] + " " + p.start.getFullYear() : fmtDate(ymd(p.start)) + " – " + fmtDate(ymd(p.end));
+  const spentP = (p, f) => sumBy(state.receipts.filter(r=>!f||f(r)), r => sumBy(allocs(r).filter(a=>inP(a.date, p)), a=>a.amount));
+  const incomeP = p => sumBy(recs("income").filter(x=>inP(x.date, p)), x=>x.amount);
+  const PW = () => isCal() ? "ay" : "dönem";          // "bu ay" / "bu dönem"
+
   function monthStats(){
-    const now = new Date(), ym = ymOf(now), pym = addMonths(ym,-1), day = now.getDate();
-    const cur = spent(ym), prevTotal = spent(pym);
-    const prevSame = sumBy(state.receipts, r => sumBy(allocs(r).filter(a=>a.ym===pym), a => {
-      const d = a.ym === (r.date||"").slice(0,7) ? parseInt((r.date||"").slice(8,10)) : 1; return d <= day ? a.amount : 0; }));
-    return {ym, pym, cur, prevTotal, prevSame, now, day};
+    const now = new Date(), p = periodOf(now), pp = prevPeriod(p);
+    const elapsed = Math.round((dOnly(now) - p.start) / 864e5) + 1;
+    const lim = new Date(pp.start); lim.setDate(lim.getDate() + elapsed - 1);
+    const cur = spentP(p), prevTotal = spentP(pp), prevSame = spentP({start:pp.start, end: lim < pp.end ? lim : pp.end});
+    return {p, pp, ym: p.key, cur, prevTotal, prevSame, now, day: elapsed};
   }
   // Düzenli ödemeler
-  const recDueDate = (rc, ym) => ym + "-" + pad(Math.min(rc.day||1, daysIn(ym)));
+  const recDueDate = (rc, ym) => rc.day === 0 ? ymd(lastBizDay(parseInt(ym.slice(0,4)), parseInt(ym.slice(5,7))-1)) : ym + "-" + pad(Math.min(rc.day||1, daysIn(ym)));
   const recActiveIn = (rc, ym) => rc.active !== false && (rc.freq !== "yearly" || parseInt(ym.slice(5,7)) === (rc.month||1)) && (!rc.start || ym >= rc.start.slice(0,7));
   const recPaid = (rc, ym) => (rc.paid||[]).includes(ym);
   function upcoming(daysAhead){
@@ -768,11 +796,15 @@
     return out.sort((a,b)=>a.due.localeCompare(b.due));
   }
   function forecast(){
-    const s = monthStats(), dim = daysIn(s.ym);
-    const variable = spent(s.ym, r => !r.recId && (parseInt(r.inst)||1) === 1);
+    const s = monthStats(), p = s.p;
+    const variable = spentP(p, r => !r.recId && (parseInt(r.inst)||1) === 1);
     const fixedDone = s.cur - variable;
-    const unpaid = sumBy(recs("rec").filter(rc => rc.type !== "income" && recActiveIn(rc, s.ym) && !recPaid(rc, s.ym)), rc=>rc.amount);
-    const proj = s.day >= 3 ? variable / s.day * dim : variable;
+    let unpaid = 0;
+    for (const rc of recs("rec")) { if (rc.type === "income") continue;
+      for (const ym of new Set([ymd(p.start).slice(0,7), ymd(p.end).slice(0,7)])) {
+        if (!recActiveIn(rc, ym) || recPaid(rc, ym)) continue;
+        const due = recDueDate(rc, ym); if (inP(due, p) && (!rc.start || due >= rc.start)) unpaid += rc.amount; } }
+    const proj = s.day >= 3 ? variable / s.day * p.days : variable;
     return { proj: proj + fixedDone + unpaid, daily: variable / Math.max(1, s.day), fixed: fixedDone + unpaid };
   }
 
@@ -794,13 +826,13 @@
   }
 
   function renderMonthCard(){
-    const s = monthStats(), inc = incomeIn(s.ym), left = inc - s.cur;
-    $("sMonthLbl").textContent = MONTHS[s.now.getMonth()] + " ayı harcaman";
+    const s = monthStats(), inc = incomeP(s.p), left = inc - s.cur;
+    $("sMonthLbl").textContent = isCal() ? MONTHS[s.now.getMonth()] + " ayı harcaman" : "Bu dönem harcaman · " + periodLabel(s.p);
     $("sMonth").textContent = fmt(s.cur);
     let cmp = "";
     if (s.prevSame > 0) { const p = Math.round((s.cur - s.prevSame) / s.prevSame * 100);
-      cmp = (p > 0 ? "▲ %"+p+" fazla" : p < 0 ? "▼ %"+Math.abs(p)+" az" : "Aynı") + " · geçen ayın aynı dönemine göre"; }
-    else if (s.prevTotal > 0) cmp = "Geçen ay toplam: " + fmt0(s.prevTotal);
+      cmp = (p > 0 ? "▲ %"+p+" fazla" : p < 0 ? "▼ %"+Math.abs(p)+" az" : "Aynı") + (isCal() ? " · geçen ayın aynı dönemine göre" : " · önceki dönemin aynı günlerine göre"); }
+    else if (s.prevTotal > 0) cmp = (isCal() ? "Geçen ay" : "Önceki dönem") + " toplam: " + fmt0(s.prevTotal);
     $("sMonthCmp").textContent = cmp;
     const b = state.settings.budget;
     $("sBudget").classList.toggle("hidden", !b);
@@ -810,7 +842,7 @@
       $("sBudgetR").textContent = ratio >= 1 ? fmt0(s.cur-b) + " aşıldı" : fmt0(b-s.cur) + " kaldı"; }
     $("hIn").textContent = fmt0(inc); $("hOut").textContent = fmt0(s.cur); $("hLeft").textContent = (left<0?"-":"") + fmt0(Math.abs(left));
     const fc = forecast();
-    $("hForecast").textContent = s.cur > 0 ? "🔮 Bu gidişle ay sonunda yaklaşık " + fmt0(fc.proj) + " harcamış olacaksın" + (inc ? (fc.proj > inc ? " — gelirini aşabilirsin." : ".") : ".") : "";
+    $("hForecast").textContent = s.cur > 0 ? "🔮 Bu gidişle " + (isCal() ? "ay sonunda" : "maaş gününe kadar (" + fmtDate(ymd(s.p.end)) + ")") + " yaklaşık " + fmt0(fc.proj) + " harcamış olacaksın" + (inc ? (fc.proj > inc ? " — gelirini aşabilirsin." : ".") : ".") : "";
   }
 
   function renderUpcoming(){
@@ -827,7 +859,8 @@
     mid.append(el("div","t", rc.name));
     const s = el("div","s");
     if (u) { const span = el("span", u.d < 0 ? "due-late" : u.d <= 3 ? "due-soon" : "", dueText(u.d)); s.append(span, document.createTextNode(" · " + fmtDate(u.due))); }
-    else { s.textContent = (rc.freq === "yearly" ? "Her yıl " + parseInt(rc.day) + " " + MONTHS[(rc.month||1)-1] : "Her ayın " + rc.day + ". günü") + (rc.active === false ? " · durduruldu" : ""); }
+    else { const dn = rc.day === 0 ? "son iş günü" : rc.day >= 31 ? "son günü" : rc.day + ". günü";
+      s.textContent = (rc.freq === "yearly" ? "Her yıl " + MONTHS[(rc.month||1)-1] + " ayının " + dn : "Her ayın " + dn) + (rc.active === false ? " · durduruldu" : ""); }
     mid.append(s);
     const amt = el("div","amt " + (isInc ? "pos" : ""), (isInc ? "+" : "") + fmt0(rc.amount));
     row.append(mid, amt);
@@ -904,15 +937,17 @@
     f.style.width = Math.min(100, ratio*100) + "%"; t.append(f); b.append(l, t); return b;
   }
   function renderBudget(){
-    const ym = curYM(), inc = incomeIn(ym), out = spent(ym), left = inc - out;
-    $("bMonthTitle").textContent = "💼 " + MONTHS[new Date().getMonth()] + " özeti";
+    const ym = curYM(), P = periodOf(new Date()), inc = incomeP(P), out = spentP(P), left = inc - out;
+    $("bMonthTitle").textContent = "💼 " + (isCal() ? MONTHS[new Date().getMonth()] + " özeti" : "Bu dönem");
+    $("bPeriod").textContent = isCal() ? "Takvim ayı: " + periodLabel(P) : periodLabel(P) + " · " + P.days + " gün · bir sonraki maaşa " + (dayDiff(ymd(P.end), today()) + 1) + " gün";
+    $("pStart").value = pRule();
     $("bIn").textContent = fmt0(inc); $("bOut").textContent = fmt0(out);
     $("bLeft").textContent = (left<0?"-":"") + fmt0(Math.abs(left)); $("bLeft").className = left < 0 ? "neg" : "pos";
     $("bRate").textContent = inc > 0 ? "%" + Math.round(left/inc*100) : "—";
     // gelir listesi
     const il = $("incomeList"); il.innerHTML = "";
-    const incs = recs("income").filter(x=>(x.date||"").slice(0,7)===ym).sort((a,b)=>b.date.localeCompare(a.date));
-    if (!incs.length) il.append(el("div","empty-s","Bu ay gelir eklemedin. Maaşını eklersen ne kadar kaldığını gösteririm."));
+    const incs = recs("income").filter(x=>inP(x.date, P)).sort((a,b)=>b.date.localeCompare(a.date));
+    if (!incs.length) il.append(el("div","empty-s","Bu " + PW() + " gelir eklemedin. Maaşını eklersen ne kadar kaldığını gösteririm."));
     incs.forEach(x => { const row = el("div","item"); row.append(el("div","ico", srcOf(x.src).e));
       const mid = el("div","mid"); mid.onclick = () => openIncomeForm(x); mid.append(el("div","t", x.note || srcOf(x.src).n), el("div","s", fmtDate(x.date)+" · "+srcOf(x.src).n));
       row.append(mid, el("div","amt pos","+"+fmt0(x.amount))); il.append(row); });
@@ -921,8 +956,8 @@
     const st = state.settings;
     if (st.budget > 0) cb.append(barEl("🧮 Toplam", fmt0(out)+" / "+fmt0(st.budget), out/st.budget));
     const set = Object.entries(st.catBudgets||{}).filter(([k,v])=>v>0);
-    set.sort((a,b)=> spent(ym,r=>r.cat===b[0])/b[1] - spent(ym,r=>r.cat===a[0])/a[1]);
-    set.forEach(([k,v]) => { const s = spent(ym, r=>r.cat===k); cb.append(barEl(catOf(k).e+"  "+catOf(k).n, fmt0(s)+" / "+fmt0(v), s/v)); });
+    set.sort((a,b)=> spentP(P,r=>r.cat===b[0])/b[1] - spentP(P,r=>r.cat===a[0])/a[1]);
+    set.forEach(([k,v]) => { const s = spentP(P, r=>r.cat===k); cb.append(barEl(catOf(k).e+"  "+catOf(k).n, fmt0(s)+" / "+fmt0(v), s/v)); });
     if (!st.budget && !set.length) cb.append(el("div","empty-s","Henüz bütçe koymadın. \"Düzenle\"ye bas, örneğin Market için 8.000 ₺ yaz."));
     // düzenli ödemeler
     const ro = $("recOut"); ro.innerHTML = "";
@@ -995,8 +1030,10 @@
     $("dualLead").textContent = y + " · gelir " + fmt0(ti) + " · gider " + fmt0(to) + (ti ? " · tasarruf %" + Math.round((ti-to)/ti*100) : "");
     // bu ay
     const fc = forecast();
-    $("rDaily").textContent = fmt0(fc.daily); $("rProj").textContent = fmt0(fc.proj); $("rFixed").textContent = fmt0(fc.fixed);
-    $("rCount").textContent = String(state.receipts.filter(r=>(r.date||"").slice(0,7)===curYM()).length);
+    $("rProjL").textContent = isCal() ? "Ay sonu tahmini" : "Dönem sonu tahmini"; $("rDaily").textContent = fmt0(fc.daily); $("rProj").textContent = fmt0(fc.proj); $("rFixed").textContent = fmt0(fc.fixed);
+    const PN = periodOf(new Date());
+    $("rNowTitle").textContent = isCal() ? "Bu ayın özeti" : "Bu dönemin özeti · " + periodLabel(PN);
+    $("rCount").textContent = String(state.receipts.filter(r=>inP(r.date, PN)).length);
     // aylık
     const mo = outs, max = Math.max(...mo, 1), b = state.settings.budget, mOut=$("monthsOut"); mOut.innerHTML="";
     mo.forEach((v,i)=>{ const m=el("div","m"); const col=el("div","col"+(v?"":" zero")+(b && v>b?" over":"")); col.style.height=Math.max(2,(v/max)*100)+"%"; col.title=MONTHS[i]+": "+fmt(v); m.append(col, el("div","ml",MONTHS[i].slice(0,3))); mOut.append(m); });
@@ -1082,34 +1119,37 @@
     await notify(title, body, key);
   }
   async function checkAlerts(){
-    const st = state.settings, s = monthStats(), ym = s.ym, mName = MONTHS[s.now.getMonth()];
+    const st = state.settings, s = monthStats(), key = s.p.key, P = s.p, W = PW();
+    const pName = isCal() ? MONTHS[s.now.getMonth()] + " ayında" : "Bu dönem (" + periodLabel(P) + ")";
     if (st.aBudget && st.budget > 0) {
       const ratio = s.cur / st.budget;
-      if (ratio >= 1) await fire(ym+":budget100", "🚨 Aylık bütçeni aştın", mName+" ayında "+fmt0(s.cur)+" harcadın. Bütçen "+fmt0(st.budget)+".", "red");
-      else if (ratio >= 0.8) await fire(ym+":budget80", "⚠️ Bütçenin %"+Math.round(ratio*100)+"'ine geldin", "Bu ay "+fmt0(s.cur)+" harcadın, "+fmt0(st.budget-s.cur)+" kaldı.");
+      if (ratio >= 1) await fire(key+":budget100", "🚨 Bütçeni aştın", pName+" "+fmt0(s.cur)+" harcadın. Bütçen "+fmt0(st.budget)+".", "red");
+      else if (ratio >= 0.8) await fire(key+":budget80", "⚠️ Bütçenin %"+Math.round(ratio*100)+"'ine geldin", "Bu "+W+" "+fmt0(s.cur)+" harcadın, "+fmt0(st.budget-s.cur)+" kaldı.");
     }
     if (st.aBudget) for (const [k,v] of Object.entries(st.catBudgets||{})) {
-      if (!(v > 0)) continue; const c = spent(ym, r=>r.cat===k), ratio = c/v, n = catOf(k).n;
-      if (ratio >= 1) await fire(ym+":cb100:"+k, "🚨 "+n+" bütçesi aşıldı", "Bu ay "+fmt0(c)+" harcadın, sınırın "+fmt0(v)+".", "red");
-      else if (ratio >= 0.8) await fire(ym+":cb80:"+k, "⚠️ "+n+" bütçesinin %"+Math.round(ratio*100)+"'i doldu", fmt0(v-c)+" kaldı.");
+      if (!(v > 0)) continue; const c = spentP(P, r=>r.cat===k), ratio = c/v, n = catOf(k).n;
+      if (ratio >= 1) await fire(key+":cb100:"+k, "🚨 "+n+" bütçesi aşıldı", "Bu "+W+" "+fmt0(c)+" harcadın, sınırın "+fmt0(v)+".", "red");
+      else if (ratio >= 0.8) await fire(key+":cb80:"+k, "⚠️ "+n+" bütçesinin %"+Math.round(ratio*100)+"'i doldu", fmt0(v-c)+" kaldı.");
     }
-    const inc = incomeIn(ym);
-    if (st.aBudget && inc > 0 && s.cur > inc) await fire(ym+":overinc", "🚨 Gelirinden fazla harcadın", "Bu ay gelir "+fmt0(inc)+", gider "+fmt0(s.cur)+".", "red");
+    const inc = incomeP(P);
+    if (st.aBudget && inc > 0 && s.cur > inc) await fire(key+":overinc", "🚨 Gelirinden fazla harcadın", "Bu "+W+" gelir "+fmt0(inc)+", gider "+fmt0(s.cur)+".", "red");
     if (st.aMonth) {
+      const prevW = isCal() ? "geçen ayın" : "önceki dönemin";
       if (s.prevTotal > 0 && s.cur > s.prevTotal)
-        await fire(ym+":overprev", "📈 Geçen ayın toplamını geçtin", "Bu ay "+fmt0(s.cur)+" harcadın; geçen ayın tamamı "+fmt0(s.prevTotal)+" idi.", "red");
+        await fire(key+":overprev", "📈 " + (isCal() ? "Geçen ayın" : "Önceki dönemin") + " toplamını geçtin", "Bu "+W+" "+fmt0(s.cur)+" harcadın; "+prevW+" tamamı "+fmt0(s.prevTotal)+" idi.", "red");
       else if (s.prevSame >= 500 && s.cur > s.prevSame*1.25 && s.cur - s.prevSame >= 500) {
-        const p = Math.round((s.cur-s.prevSame)/s.prevSame*100);
-        await fire(ym+":pace", "📈 Harcaman artıyor", "Geçen ayın aynı dönemine göre %"+p+" fazla harcadın ("+fmt0(s.cur)+" / "+fmt0(s.prevSame)+").");
+        const pc = Math.round((s.cur-s.prevSame)/s.prevSame*100);
+        await fire(key+":pace", "📈 Harcaman artıyor", prevW.charAt(0).toUpperCase()+prevW.slice(1)+" aynı günlerine göre %"+pc+" fazla harcadın ("+fmt0(s.cur)+" / "+fmt0(s.prevSame)+").");
       }
     }
     if (st.aCat) {
+      const prevs = []; let q = P; for (let i=0;i<3;i++){ q = prevPeriod(q); prevs.push(q); }
       for (const c of CATS) {
-        const now = spent(ym, r=>r.cat===c.k); if (!now) continue;
-        const vals = []; for (let i=1;i<=3;i++){ const v = spent(addMonths(ym,-i), r=>r.cat===c.k); if (v>0) vals.push(v); }
+        const now = spentP(P, r=>r.cat===c.k); if (!now) continue;
+        const vals = prevs.map(pp => spentP(pp, r=>r.cat===c.k)).filter(v=>v>0);
         if (!vals.length) continue;
         const avg = sumBy(vals)/vals.length;
-        if (now > avg*1.5 && now-avg >= 500) await fire(ym+":cat:"+c.k, "📊 "+c.n+" harcaman arttı", "Bu ay "+fmt0(now)+"; son aylarda ortalama "+fmt0(avg)+" idi.");
+        if (now > avg*1.5 && now-avg >= 500) await fire(key+":cat:"+c.k, "📊 "+c.n+" harcaman arttı", "Bu "+W+" "+fmt0(now)+"; önceki "+(isCal()?"aylarda":"dönemlerde")+" ortalama "+fmt0(avg)+" idi.");
       }
     }
     if (st.aRec) {
@@ -1565,13 +1605,13 @@ Kurallar:
     }, x ? () => deleteRecord(x.id) : null, x ? null : "Her ay aynı gün gelen maaşı \"Düzenli ödemeler\"e gelir olarak eklersen her ay tek dokunuşla işlenir.");
   }
   function openRecForm(rc){
-    const dayOpts = Array.from({length:31}, (_,i)=>({k:String(i+1), n:String(i+1)}));
+    const dayOpts = Array.from({length:30}, (_,i)=>({k:String(i+1), n:String(i+1)})).concat([{k:"31", n:"Ayın son günü"}, {k:"0", n:"Ayın son iş günü"}]);
     openGen(rc ? "Düzenli kaydı düzenle" : "Düzenli ödeme / gelir ekle", [
       {id:"type", label:"Tür", type:"select", options:[{k:"expense",n:"Gider (ödeme)"},{k:"income",n:"Gelir (maaş vb.)"}], value:rc?.type || "expense"},
       {id:"name", label:"Adı", value:rc?.name, placeholder:"örn. Kira, Netflix, Maaş", full:true},
       {id:"amount", label:"Tutar (₺)", type:"money", value:rc?.amount},
       {id:"freq", label:"Sıklık", type:"select", options:[{k:"monthly",n:"Her ay"},{k:"yearly",n:"Her yıl"}], value:rc?.freq || "monthly"},
-      {id:"day", label:"Ayın kaçında?", type:"select", options:dayOpts, value:String(rc?.day || new Date().getDate())},
+      {id:"day", label:"Ayın kaçında?", type:"select", options:dayOpts, value:String(rc ? rc.day : new Date().getDate())},
       {id:"month", label:"Hangi ay?", type:"select", options:MONTHS.map((m,i)=>({k:String(i+1), n:m})), value:String(rc?.month || (new Date().getMonth()+1)), showIf:"freq=yearly"},
       {id:"cat", label:"Kategori", type:"select", options:CATS.map(c=>({k:c.k, n:c.e+"  "+c.n})), value:rc?.cat || "faturalar", showIf:"type=expense"},
       {id:"pay", label:"Ödeme yöntemi", type:"select", options:PAYS.map(p=>({k:p.k, n:p.n})), value:rc?.pay || "banka", showIf:"type=expense"},
@@ -1581,7 +1621,7 @@ Kurallar:
       const name = gv("name").trim(), amount = parseNum(gv("amount"));
       if (!name) { toast("Adını yaz."); return false; } if (!amount) { toast("Tutarı gir."); return false; }
       await saveRecord(Object.assign({}, rc || {id:newId("p"), kind:"rec", paid:[], start: today()}, {
-        type: gv("type"), name, amount, freq: gv("freq"), day: parseInt(gv("day")), month: parseInt(gv("month")), cat: gv("cat"), pay: gv("pay"), src: gv("src"), active: gv("active") === "1" }));
+        type: gv("type"), name, amount, freq: gv("freq"), day: parseInt(gv("day")) || 0, month: parseInt(gv("month")), cat: gv("cat"), pay: gv("pay"), src: gv("src"), active: gv("active") === "1" }));
       toast(rc ? "Güncellendi ✓" : "Eklendi ✓");
     }, rc ? () => deleteRecord(rc.id) : null, rc ? null : "Günü gelince bildirim gönderirim. \"Öde\"ye basınca gidere (gelirse gelire) otomatik işlenir.");
   }
@@ -1788,9 +1828,14 @@ Kurallar:
   DOCS.forEach(d=>{ const o=el("option",null,d.n); o.value=d.k; $("fDoc").append(o); });
   PAYS.forEach(p=>{ const o=el("option",null,p.e+"  "+p.n); o.value=p.k; $("fPay").append(o); });
   [1,2,3,4,5,6,7,8,9,10,11,12,18,24,36].forEach(n=>{ const o=el("option",null, n===1 ? "Tek çekim / peşin" : n+" taksit"); o.value=String(n); $("fInst").append(o); });
+  [{k:"1",n:"Takvim ayı (ayın 1'i)"},{k:"lastbiz",n:"Maaş ayın son iş günü"},{k:"last",n:"Maaş ayın son günü"}]
+    .concat(Array.from({length:27},(_,i)=>({k:String(i+2), n:"Maaş ayın "+(i+2)+"'inde"})))
+    .forEach(o=>{ const op=el("option",null,o.n); op.value=o.k; $("pStart").append(op); });
+  $("pStart").addEventListener("change", () => { state.settings.pStart = $("pStart").value; saveSettings(); render(); checkAlerts();
+    toast(isCal() ? "Bütçe artık takvim ayına göre" : "Bütçe artık maaş gününden maaş gününe ✓"); });
   fillSettings();
   load().then(checkAlerts);
-  window.__fd = { parseReceipt, allocs, state };
+  window.__fd = { parseReceipt, allocs, state, periodOf, ymd };
 })();
 </script>
 </body>

@@ -1,5 +1,5 @@
 // Fiş & Fatura Defteri — çevrimdışı çalışma ve bildirimler
-const VERSION = "v2.0.0";
+const VERSION = "v2.1.0";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-v1";
 const SHELL_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
