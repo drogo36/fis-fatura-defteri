@@ -327,6 +327,12 @@
       <div class="stat"><div class="k" id="sYearLbl">Yıl toplamı</div><div class="v" id="sTotal">₺0</div></div>
       <div class="stat tax"><div class="k">Vergiden düşülebilir</div><div class="v" id="sTax">₺0</div></div>
     </div>
+    <div class="card hidden" id="bakCard" style="background:var(--gold-soft)">
+      <h2>💾 Yedek alma zamanı</h2>
+      <p class="lead" id="bakText" style="color:var(--ink)">Telefonun kaybolursa kayıtların gitmesin.</p>
+      <button class="btn block" id="bakNow">Şimdi yedekle (iCloud / Drive)</button>
+      <button class="linkbtn" id="bakLater" style="margin-top:6px;width:100%">Sonra hatırlat</button>
+    </div>
     <div class="card hidden" id="upcomingCard">
       <div class="sec-h"><h2>📅 Yaklaşan ödemeler</h2></div>
       <div id="upcomingOut"></div>
@@ -488,15 +494,19 @@
       <h2>🤖 Yapay zeka ile fiş okuma</h2>
       <p class="lead">Google'ın Gemini yapay zekası fişi çok daha doğru okur: buruşuk, soluk ve e-Arşiv faturalar dahil. Ücretsiz bir anahtar alıp buraya bir kez yapıştırman yeterli.</p>
       <div class="perm" id="gemState"></div>
-      <div class="f"><label for="gemKey">Gemini API anahtarı</label><input id="gemKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
-      <button class="btn block" id="gemSave">Kaydet ve dene</button>
+      <div id="gemEdit">
+        <div class="f"><label for="gemKey">Gemini API anahtarı</label><input id="gemKey" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+        <button class="btn block" id="gemSave">Kaydet ve dene</button>
+      </div>
+      <button class="btn ghost block hidden" id="gemChange">Anahtarı değiştir</button>
+      <button class="btn ghost block hidden" id="gemTest">Anahtarı test et</button>
       <button class="btn danger block hidden" id="gemDel">Anahtarı sil</button>
       <div class="info">
         <h3>Ücretsiz anahtar nasıl alınır? (2 dakika)</h3>
         <ol>
           <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> adresini aç, Google hesabınla giriş yap.</li>
           <li>Şartları kabul et, <b>Create API key</b> (API anahtarı oluştur) butonuna bas.</li>
-          <li>Çıkan <b>AIza…</b> ile başlayan anahtarın yanındaki <b>kopyala</b> simgesine bas.</li>
+          <li>Çıkan <b>AQ.</b> ile başlayan anahtarın (eski hesaplarda <b>AIza</b>) yanındaki <b>kopyala</b> simgesine bas. Anahtarı elle yazma, mutlaka kopyala.</li>
           <li>Buraya geri dön, kutuya yapıştır ve <b>Kaydet ve dene</b>'ye bas.</li>
         </ol>
       </div>
@@ -542,11 +552,17 @@
 
     <div class="card">
       <h2>💾 Yedekleme</h2>
-      <p class="lead">Kayıtların sadece bu telefonda duruyor. Telefon değiştirirsen ya da uygulamayı silersen kaybolmasın diye ayda bir yedek al ve Drive'a / WhatsApp'ta kendine gönder.</p>
+      <h3 style="font-size:14px;margin:14px 0 4px">🔄 Otomatik yedek (telefonda)</h3>
+      <p class="lead">Uygulama her gün kendiliğinden yedek alır, son 10 günü saklar. Yanlışlıkla bir şey silersen o güne dönebilirsin.</p>
+      <div class="perm ok" id="snapState">✓ Otomatik yedek açık</div>
+      <div id="snapList"></div>
+      <h3 style="font-size:14px;margin:18px 0 4px">☁️ Telefon dışına yedek</h3>
+      <p class="lead">Telefon kaybolur ya da değişirse diye. Butona bas, açılan menüden <b>"Dosyalara Kaydet" → iCloud Drive</b>'ı ya da <b>Google Drive</b>'ı seç. Haftada bir hatırlatırım.</p>
       <button class="btn block" id="backupBtn">Yedek al (her şey dahil)</button>
-      <button class="btn ghost block" id="restoreBtn">Yedekten geri yükle</button>
+      <button class="btn ghost block" id="restoreBtn">Yedek dosyasından geri yükle</button>
       <input type="file" id="restoreFile" accept=".json,application/json" hidden>
       <div class="note" id="lastBackup"></div>
+      <div class="setrow" style="margin-top:8px"><div class="tx"><b>Haftalık yedek hatırlatması</b><span>Son yedeğin 7 günden eskiyse hatırlat</span></div><label class="switch"><input type="checkbox" id="aBak"><span></span></label></div>
     </div>
 
     <div class="card">
@@ -659,7 +675,7 @@
 <script>
 (() => {
   "use strict";
-  const APP_VERSION = "2.2.0";
+  const APP_VERSION = "2.4.0";
   const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 
   // ================= Sabitler =================
@@ -724,11 +740,12 @@
   const DB = (() => {
     let dbp;
     const open = () => dbp || (dbp = new Promise((res, rej) => {
-      const r = indexedDB.open("fis-fatura-defteri", 2);
+      const r = indexedDB.open("fis-fatura-defteri", 3);
       r.onupgradeneeded = () => { const d = r.result;
         if (!d.objectStoreNames.contains("receipts")) d.createObjectStore("receipts", {keyPath:"id"});
         if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos");
-        if (!d.objectStoreNames.contains("records")) d.createObjectStore("records", {keyPath:"id"}); };
+        if (!d.objectStoreNames.contains("records")) d.createObjectStore("records", {keyPath:"id"});
+        if (!d.objectStoreNames.contains("snaps")) d.createObjectStore("snaps", {keyPath:"key"}); };
       r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
     }));
     const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -736,13 +753,19 @@
     return {
       async all(){ const d = await open(); return req(d.transaction("receipts").objectStore("receipts").getAll()); },
       async put(r){ const d = await open(); const t = d.transaction("receipts","readwrite"); t.objectStore("receipts").put(r); return done(t); },
-      async del(id){ const d = await open(); const t = d.transaction(["receipts","photos"],"readwrite"); t.objectStore("receipts").delete(id); t.objectStore("photos").delete(id); return done(t); },
+      async del(id){ const d = await open(); const t = d.transaction("receipts","readwrite"); t.objectStore("receipts").delete(id); return done(t); },
+      async delPhoto(id){ const d = await open(); const t = d.transaction("photos","readwrite"); t.objectStore("photos").delete(id); return done(t); },
+      async snapAll(){ const d = await open(); return req(d.transaction("snaps").objectStore("snaps").getAll()); },
+      async snapPut(x){ const d = await open(); const t = d.transaction("snaps","readwrite"); t.objectStore("snaps").put(x); return done(t); },
+      async snapDel(k){ const d = await open(); const t = d.transaction("snaps","readwrite"); t.objectStore("snaps").delete(k); return done(t); },
+      async replaceAll(receipts, records){ const d = await open(); const t = d.transaction(["receipts","records"],"readwrite");
+        const R = t.objectStore("receipts"), X = t.objectStore("records"); R.clear(); X.clear(); receipts.forEach(r=>R.put(r)); records.forEach(x=>X.put(x)); return done(t); },
       async putPhoto(id, blob){ const d = await open(); const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(blob, id); return done(t); },
       async getPhoto(id){ const d = await open(); return req(d.transaction("photos").objectStore("photos").get(id)); },
       async recAll(){ const d = await open(); return req(d.transaction("records").objectStore("records").getAll()); },
       async recPut(r){ const d = await open(); const t = d.transaction("records","readwrite"); t.objectStore("records").put(r); return done(t); },
       async recDel(id){ const d = await open(); const t = d.transaction("records","readwrite"); t.objectStore("records").delete(id); return done(t); },
-      async wipe(){ const d = await open(); const t = d.transaction(["receipts","photos","records"],"readwrite"); ["receipts","photos","records"].forEach(s=>t.objectStore(s).clear()); return done(t); }
+      async wipe(){ const d = await open(); const t = d.transaction(["receipts","photos","records","snaps"],"readwrite"); ["receipts","photos","records","snaps"].forEach(s=>t.objectStore(s).clear()); return done(t); }
     };
   })();
   const photoUrls = new Map();
@@ -753,7 +776,7 @@
   function dropPhotoUrl(id){ const u = photoUrls.get(id); if (u) { URL.revokeObjectURL(u); photoUrls.delete(id); } }
 
   // ================= Durum =================
-  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, pStart:"1", catBudgets:{}, aBudget:true, aMonth:true, aCat:true, aRec:true, aWar:true};
+  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, pStart:"1", catBudgets:{}, aBudget:true, aMonth:true, aCat:true, aRec:true, aWar:true, aBak:true};
   const state = {
     receipts: [], records: [], year: new Date().getFullYear(), cat:"all", taxOnly:false, q:"",
     settings: Object.assign({}, DEFAULT_SETTINGS, ls.get("fd.settings", {}))
@@ -763,8 +786,8 @@
   const recs = kind => state.records.filter(x => x.kind === kind);
 
   async function load(){
-    try { state.receipts = await DB.all(); state.records = await DB.recAll(); }
-    catch(e){ toast("Kayıtlar açılamadı. Tarayıcı gizli modda olabilir."); }
+    try { state.receipts = await DB.all(); state.records = await DB.recAll(); state.loaded = true; }
+    catch(e){ state.loaded = false; toast("Kayıtlar açılamadı. Tarayıcı gizli modda olabilir."); }
     render();
   }
   async function saveRecord(x){
@@ -866,6 +889,7 @@
     $("sTax").textContent = fmt(sumBy(items.filter(isEligible), r=>r.total));
     renderMonthCard(); renderAlerts(); renderUpcoming();
     renderChips(items); renderList(items); renderBudget(); renderReport(items); renderCalc(items);
+    renderBackupNag(); scheduleSnap();
   }
 
   function renderMonthCard(){
@@ -1204,6 +1228,8 @@
       for (const x of recs("debt")) { if (x.closed || !x.due) continue; const d = dayDiff(x.due, today());
         if (d <= 3) await fire("debt:"+x.id+":"+x.due, x.dir==="alacak" ? "🤝 "+x.person+" sana borcunu ödemeli" : "🤝 "+x.person+"'e borcunu ödeme günü", fmt0(x.amount)+" · vade "+fmtDate(x.due)+" ("+dueText(d)+")"); }
     }
+    const bAge = backupDue();
+    if (bAge) await fire("backup:" + Math.floor(Date.now() / (7*864e5)), "💾 Yedek alma zamanı", (ls.get("fd.lastBackup", 0) ? "Son yedeğin " + bAge + " gün önce. " : "") + "Uygulamayı aç, tek dokunuşla iCloud'a ya da Drive'a yedekle.");
     if (st.aWar) {
       const now = new Date(today());
       for (const r of state.receipts) {
@@ -1337,7 +1363,20 @@
 
   // ================= Yapay zeka ile okuma (Gemini) =================
   const GEMINI_MODELS = ["gemini-3-flash-preview","gemini-3.1-flash-lite","gemini-2.5-flash-lite","gemini-3.5-flash-lite","gemini-3.8-flash","gemini-2.5-flash"];
-  const getGemKey = () => (ls.get("fd.gemKey", "") || "").trim();
+  // Anahtar iki yerde saklanır (localStorage + IndexedDB); biri silinirse diğerinden geri gelir
+  const KV = (() => { let p;
+    const open = () => p || (p = new Promise((res, rej) => { const r = indexedDB.open("fd-kv", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+    return {
+      async get(k){ try { const d = await open(); return await new Promise(res => { const q = d.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); }); } catch(e){ return undefined; } },
+      async set(k, v){ try { const d = await open(); const t = d.transaction("kv","readwrite"); t.objectStore("kv").put(v, k); } catch(e){} }
+    }; })();
+  const cleanKey = k => String(k||"").replace(/[\u200B-\u200D\uFEFF\s"'`<>]/g, "").replace(/^(Bearer|key=|GEMINI_API_KEY=|GOOGLE_API_KEY=)/i, "");
+  const getGemKey = () => cleanKey(ls.get("fd.gemKey", ""));
+  function setGemKey(k){ ls.set("fd.gemKey", k); KV.set("gemKey", k); }
+  async function restoreGemKey(){ if (getGemKey()) { KV.set("gemKey", getGemKey()); return; } const k = await KV.get("gemKey"); if (k) { ls.set("fd.gemKey", k); if (curView === "settings") renderGem(); } }
+  const KEY_ERRS = ["badkey","expired","leaked","unsupported"];
+  function noteGemResult(code){ if (!code) ls.set("fd.gemErr", null); else if (KEY_ERRS.includes(code) || code === "denied") ls.set("fd.gemErr", {code, at: Date.now()}); else return;
+    try { if (curView === "settings") renderGem(); } catch(e){} }
   async function geminiCall(parts, key, signal){
     const pref = ls.get("fd.gemModel", null);
     const order = pref && GEMINI_MODELS.includes(pref) ? [pref].concat(GEMINI_MODELS.filter(m=>m!==pref)) : GEMINI_MODELS;
@@ -1354,12 +1393,16 @@
       let body = {}; try { body = await res.json(); } catch(_) {}
       if (res.ok) {
         const text = (body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts || []).map(p=>p.text||"").join("");
-        if (text) { ls.set("fd.gemModel", m); return { text, model:m }; }
+        if (text) { ls.set("fd.gemModel", m); noteGemResult(null); return { text, model:m }; }
         lastErr = { code:"empty" }; continue;
       }
       const emsg = (body.error && body.error.message) || "";
-      if (/API key not valid|API_KEY_INVALID|API key expired/i.test(emsg)) throw { code:"badkey", msg:emsg };
-      lastErr = { code: res.status === 429 ? "quota" : "model", status: res.status, msg: emsg };
+      const all = emsg + " " + ((body.error && body.error.status) || "") + " " + JSON.stringify((body.error && body.error.details) || "");
+      if (/expired/i.test(emsg)) throw { code:"expired", msg:emsg };
+      if (/leaked/i.test(all)) throw { code:"leaked", msg:emsg };
+      if (/ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(all)) throw { code:"unsupported", msg:emsg };
+      if (res.status === 401 || /API key not valid|API_KEY_INVALID|API_KEY_SERVICE_BLOCKED/i.test(all)) throw { code:"badkey", msg:emsg };
+      lastErr = { code: res.status === 429 ? "quota" : res.status === 403 ? "denied" : "model", status: res.status, msg: emsg };
       // 404 (model yok), 400/403 (bu modele izin yok), 429 (kota), 5xx → sıradaki modeli dene
     }
     throw lastErr || { code:"other" };
@@ -1413,7 +1456,11 @@ Kurallar:
     updateElig(); return n;
   }
   const GEM_ERR = {
-    badkey: "Gemini anahtarın geçersiz. ⚙️ Ayarlar'dan anahtarı kontrol et.",
+    badkey: "Google anahtarı kabul etmedi (eksik ya da yanlış kopyalanmış olabilir). ⚙️ Ayarlar'dan anahtarı yeniden yapıştır.",
+    expired: "Google bu anahtarın süresinin dolduğunu söylüyor. AI Studio'dan yeni anahtar oluşturup ⚙️ Ayarlar'a yapıştır.",
+    leaked: "Google bu anahtarı 'paylaşılmış' diye engelledi. Yeni anahtar oluştur ve kimseyle paylaşma.",
+    unsupported: "Google bu anahtarı bu projede kabul etmedi. AI Studio'da yeni bir proje açıp yeni anahtar oluştur.",
+    denied: "Google bu hesapta Gemini'ye izin vermiyor (ücretsiz kullanım kapalı olabilir).",
     quota: "Gemini'nin günlük ücretsiz kullanım sınırı doldu.",
     network: "İnternet yok, Gemini'ye ulaşılamadı.",
     timeout: "Gemini çok geç yanıt verdi."
@@ -1426,7 +1473,7 @@ Kurallar:
     const msg=$("ocrMsg"), prog=$("prog"), fill=$("progFill"), save=$("saveBtn");
     $("ocrBox").classList.add("show"); $("ocrRetry").classList.add("hidden");
     msg.className="ocr-msg busy"; save.disabled=true; prog.classList.add("show"); fill.style.width="3%";
-    let note = "";
+    let note = "", keyWarn = "";
     try {
       // 1) Yapay zeka (Gemini) — anahtar varsa
       if (getGemKey() && navigator.onLine !== false) {
@@ -1440,6 +1487,8 @@ Kurallar:
           note = "Yapay zeka fişi net okuyamadı, telefondaki okuyucuyla deniyorum…";
         } catch(e) {
           clearInterval(tick);
+          noteGemResult(e && e.code);
+          if (KEY_ERRS.includes(e && e.code) || (e && e.code) === "denied" || (e && e.code) === "quota") keyWarn = "⚠️ " + (GEM_ERR[e.code] || gemErrToast(e.code)) + " ";
           note = (GEM_ERR[e && e.code] || "Yapay zeka şu an yanıt vermedi.") + " Telefondaki okuyucuyla deniyorum…";
         }
         msg.textContent = note; fill.style.width = "5%";
@@ -1459,12 +1508,12 @@ Kurallar:
         const n = applyParsed(parseReceipt(data.text || ""), false);
         msg.className = "ocr-msg";
         const hint = getGemKey() ? "" : " Daha doğru okuma için ⚙️ Ayarlar'dan yapay zekayı (Gemini) aç.";
-        msg.textContent = (n >= 2 ? "✓ "+n+" alan dolduruldu. Tutarı ve tarihi kontrol et." : "Fiş net okunamadı. Daha yakından ve düz çekip tekrar dene ya da elle gir.") + hint;
+        msg.textContent = keyWarn + (n >= 2 ? "✓ "+n+" alan dolduruldu. Tutarı ve tarihi kontrol et." : "Fiş net okunamadı. Daha yakından ve düz çekip tekrar dene ya da elle gir.") + hint;
       } catch(e) {
         msg.className = "ocr-msg";
-        msg.textContent = navigator.onLine === false && firstTime
+        msg.textContent = keyWarn + (navigator.onLine === false && firstTime
           ? "İlk kullanımda okuma motorunu indirmek için internet gerekiyor. İnternete bağlanınca tekrar dene."
-          : "Fiş okunamadı. Tekrar dene ya da bilgileri elle gir.";
+          : "Fiş okunamadı. Tekrar dene ya da bilgileri elle gir.");
       }
     } finally {
       fill.style.width = "100%"; setTimeout(()=>prog.classList.remove("show"), 400);
@@ -1475,34 +1524,43 @@ Kurallar:
   $("ocrRetry").onclick = runOcr;
 
   // ---- Ayarlar: Gemini anahtarı ----
+  let gemEditing = false;
   function renderGem(){
-    const k = getGemKey(), st = $("gemState");
+    const k = getGemKey(), st = $("gemState"), err = ls.get("fd.gemErr", null);
+    const showEdit = !k || gemEditing || (err && KEY_ERRS.includes(err.code));
+    $("gemEdit").classList.toggle("hidden", !showEdit);
+    $("gemChange").classList.toggle("hidden", !k || showEdit);
+    $("gemTest").classList.toggle("hidden", !k);
     $("gemDel").classList.toggle("hidden", !k);
-    if (k) { st.className = "perm ok"; st.textContent = "✓ Yapay zeka açık · anahtar: …" + k.slice(-4) + (ls.get("fd.gemModel", null) ? " · model: " + ls.get("fd.gemModel") : ""); $("gemKey").value = ""; $("gemKey").placeholder = "Yeni anahtar yapıştır (değiştirmek için)"; }
-    else { st.className = "perm no"; st.textContent = "Yapay zeka kapalı. Fişler telefondaki basit okuyucuyla okunuyor."; $("gemKey").placeholder = "AIza… ile başlayan anahtarı yapıştır"; }
+    $("gemKey").value = "";
+    if (k && err && (KEY_ERRS.includes(err.code) || err.code === "denied")) { st.className = "perm no"; st.textContent = "⚠️ " + GEM_ERR[err.code] + " (kayıtlı anahtar: …" + k.slice(-4) + ")"; $("gemKey").placeholder = "Yeni anahtarı buraya yapıştır"; }
+    else if (k) { st.className = "perm ok"; st.textContent = "✓ Yapay zeka açık · anahtar kayıtlı (…" + k.slice(-4) + ")" + (ls.get("fd.gemModel", null) ? " · model: " + ls.get("fd.gemModel") : "") + ". Bir daha girmen gerekmez."; $("gemKey").placeholder = "Yeni anahtarı buraya yapıştır"; }
+    else { st.className = "perm no"; st.textContent = "Yapay zeka kapalı. Fişler telefondaki basit okuyucuyla okunuyor."; $("gemKey").placeholder = "AQ. ile başlayan anahtarı yapıştır"; }
   }
-  $("gemSave").onclick = async () => {
-    const key = $("gemKey").value.trim();
-    if (!key) { toast("Önce anahtarı yapıştır."); return; }
-    const btn = $("gemSave"); btn.disabled = true; btn.textContent = "Deneniyor…";
+  const gemErrToast = c => GEM_ERR[c] || (c === "quota" ? "Anahtar doğru ama Google'ın ücretsiz kullanım sınırı dolmuş ya da 0 görünüyor." : c === "network" ? "İnternet yok. Bağlanınca tekrar dene." : "Anahtar denenemedi. Biraz sonra tekrar dene.");
+  async function testKey(key, btn){
+    const label = btn.textContent; btn.disabled = true; btn.textContent = "Deneniyor…";
     try {
-      ls.set("fd.gemModel", null);
       const { text } = await geminiCall([{ text: 'Sadece şu JSON nesnesini döndür: {"ok": true}' }], key);
       if (!extractJson(text)) throw { code:"parse" };
-      ls.set("fd.gemKey", key); renderGem(); toast("Yapay zeka açıldı ✓");
-    } catch(e) {
-      const c = e && e.code;
-      toast(c === "badkey" ? "Bu anahtar geçersiz. Tamamını kopyaladığından emin ol."
-        : c === "quota" ? "Anahtar doğru ama Google kullanım sınırı 0 görünüyor. Aşağıdaki nota bak."
-        : c === "network" ? "İnternet yok. Bağlanınca tekrar dene."
-        : "Anahtar denenemedi. Tekrar dene.");
-      $("gemState").className = "perm no";
-      $("gemState").textContent = c === "quota" ? "Google bu hesapta ücretsiz kullanım vermiyor (kota 0). AI Studio'da faturalandırmayı açman gerekebilir." : "Anahtar kaydedilmedi.";
-    } finally { btn.disabled = false; btn.textContent = "Kaydet ve dene"; }
+      return true;
+    } catch(e) { noteGemResult(e && e.code); toast(gemErrToast(e && e.code)); return false; }
+    finally { btn.disabled = false; btn.textContent = label; }
+  }
+  $("gemSave").onclick = async () => {
+    const key = cleanKey($("gemKey").value);
+    if (!key) { toast("Önce anahtarı yapıştır."); return; }
+    if (!/^(AQ\.|AIza)/.test(key)) toast("Uyarı: anahtar genelde \"AQ.\" ile başlar. Yine de deniyorum…");
+    if (key.length < 30) { toast("Anahtar çok kısa görünüyor; tamamını kopyaladığından emin ol."); return; }
+    ls.set("fd.gemModel", null);
+    if (await testKey(key, $("gemSave"))) { setGemKey(key); gemEditing = false; renderGem(); toast("Yapay zeka açıldı ✓ Anahtar kaydedildi."); }
+    else renderGem();
   };
+  $("gemChange").onclick = () => { gemEditing = true; renderGem(); setTimeout(()=>$("gemKey").focus(), 50); };
+  $("gemTest").onclick = async () => { if (await testKey(getGemKey(), $("gemTest"))) toast("Anahtar çalışıyor ✓"); renderGem(); };
   $("gemDel").onclick = async () => {
     if (!await confirmBox("Gemini anahtarı bu telefondan silinsin mi? Fişler yine okunur ama daha basit okuyucuyla.", "Sil")) return;
-    ls.set("fd.gemKey", ""); ls.set("fd.gemModel", null); renderGem(); toast("Anahtar silindi");
+    setGemKey(""); ls.set("fd.gemModel", null); ls.set("fd.gemErr", null); gemEditing = false; renderGem(); toast("Anahtar silindi");
   };
 
 
@@ -1594,7 +1652,8 @@ Kurallar:
   $("delBtn").onclick = async () => {
     if (!editing) return; const r = editing;
     if (!await confirmBox(`"${r.store}" kaydı (${fmt(r.total)}) ve fotoğrafı silinsin mi? Bu geri alınamaz.`, "Sil")) return;
-    try { await DB.del(r.id); dropPhotoUrl(r.id); state.receipts = state.receipts.filter(x=>x.id!==r.id); closeForm(); render(); toast("Silindi"); }
+    try { await takeSnap("silme-oncesi").catch(()=>{}); await DB.del(r.id); if (r.hasPhoto) { const tr = ls.get("fd.photoTrash", {}); tr[r.id] = Date.now(); ls.set("fd.photoTrash", tr); }
+      state.receipts = state.receipts.filter(x=>x.id!==r.id); closeForm(); render(); toast("Silindi"); }
     catch(e){ toast("Silinemedi, tekrar dene."); }
   };
 
@@ -1633,7 +1692,7 @@ Kurallar:
     try { const ok = await genSave(); if (ok !== false) { closeGen(); render(); checkAlerts(); } }
     catch(err){ toast("Kaydedilemedi, tekrar dene."); } finally { b.disabled = false; } });
   $("genDel").onclick = async () => { if (!genDelete) return; if (!await confirmBox("Bu kayıt silinsin mi? Bu geri alınamaz.", "Sil")) return;
-    try { await genDelete(); closeGen(); render(); toast("Silindi"); } catch(e){ toast("Silinemedi."); } };
+    try { await takeSnap("silme-oncesi").catch(()=>{}); await genDelete(); closeGen(); render(); toast("Silindi"); } catch(e){ toast("Silinemedi."); } };
 
   function openIncomeForm(x){
     openGen(x ? "Geliri düzenle" : "Gelir ekle", [
@@ -1751,17 +1810,20 @@ Kurallar:
 
   // ================= Yedek =================
   const blobToDataUrl = b => new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
-  $("backupBtn").onclick = async () => {
-    const btn = $("backupBtn"); btn.disabled = true; btn.textContent = "Hazırlanıyor…";
+  async function doBackup(btn){
+    const label = btn.textContent; btn.disabled = true; btn.textContent = "Hazırlanıyor…";
     try {
       const photos = {};
       for (const r of state.receipts) if (r.hasPhoto) { const b = await DB.getPhoto(r.id); if (b) photos[r.id] = await blobToDataUrl(b); }
       const data = { app:"fis-fatura-defteri", version:2, exportedAt:new Date().toISOString(), settings:state.settings, receipts:state.receipts, records:state.records, photos };
       const ok = await saveFile(new Blob([JSON.stringify(data)], {type:"application/json"}), "fis-defteri-yedek-"+today()+".json");
-      if (ok) { ls.set("fd.lastBackup", Date.now()); renderBackup(); }
+      if (ok) { ls.set("fd.lastBackup", Date.now()); renderBackup(); renderBackupNag(); toast("Yedek hazır ✓"); }
     } catch(e){ toast("Yedek alınamadı."); }
-    finally { btn.disabled = false; btn.textContent = "Yedek al (her şey dahil)"; }
-  };
+    finally { btn.disabled = false; btn.textContent = label; }
+  }
+  $("backupBtn").onclick = () => doBackup($("backupBtn"));
+  $("bakNow").onclick = () => doBackup($("bakNow"));
+  $("bakLater").onclick = () => { ls.set("fd.bakSnooze", Date.now()); renderBackupNag(); toast("3 gün sonra tekrar hatırlatırım"); };
   $("restoreBtn").onclick = () => $("restoreFile").click();
   $("restoreFile").addEventListener("change", async e => {
     const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
@@ -1771,6 +1833,7 @@ Kurallar:
     const nRec = (data.records||[]).length;
     if (!await confirmBox(data.receipts.length+" harcama"+(nRec?" ve "+nRec+" diğer kayıt":"")+" yedekten geri yüklensin mi? Aynı kayıtlar güncellenir, mevcut diğer kayıtların silinmez.", "Geri yükle")) return;
     try {
+      await takeSnap("geri-alma");
       for (const r of data.receipts) { if (!r || !r.id) continue;
         const ph = data.photos && data.photos[r.id];
         if (ph) { const b = await (await fetch(ph)).blob(); await DB.putPhoto(r.id, b); dropPhotoUrl(r.id); }
@@ -1782,7 +1845,75 @@ Kurallar:
   });
   function renderBackup(){
     const t = ls.get("fd.lastBackup", 0);
-    $("lastBackup").textContent = t ? "Son yedek: " + new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"}) : "Henüz yedek almadın.";
+    $("lastBackup").textContent = t ? "Son telefon dışı yedek: " + new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"}) : "Henüz telefon dışına yedek almadın.";
+    renderSnaps();
+  }
+
+  // ================= Otomatik yedek (her gün, son 10 gün) =================
+  const SNAP_KEEP = 10;
+  let snapTimer = null, snapping = false;
+  function scheduleSnap(){ clearTimeout(snapTimer); snapTimer = setTimeout(() => takeSnap().catch(()=>{}), 2500); }
+  async function takeSnap(key){
+    if (!state.loaded || snapping) return; snapping = true;
+    try {
+      key = key || today();
+      const count = state.receipts.length + state.records.length;
+      const all = await DB.snapAll();
+      const existing = all.find(x => x.key === key);
+      // Boş veri, dolu yedeğin üzerine asla yazılmaz
+      if (!count && existing && (existing.receipts.length + existing.records.length)) return;
+      if (!count && !existing) return;
+      await DB.snapPut({ key, at: Date.now(), settings: JSON.parse(JSON.stringify(state.settings)),
+        receipts: JSON.parse(JSON.stringify(state.receipts)), records: JSON.parse(JSON.stringify(state.records)) });
+      const days = all.map(x=>x.key).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).concat(key === today() && !existing ? [key] : []);
+      const uniq = [...new Set(days)].sort().reverse();
+      for (const k of uniq.slice(SNAP_KEEP)) await DB.snapDel(k);
+      if (curView === "settings") renderSnaps();
+    } finally { snapping = false; }
+  }
+  async function renderSnaps(){
+    const out = $("snapList"); if (!out) return;
+    let all = []; try { all = await DB.snapAll(); } catch(e){}
+    all.sort((a,b)=>b.at-a.at); out.innerHTML = "";
+    $("snapState").textContent = all.length ? "✓ Otomatik yedek açık · " + all.filter(x=>/^\d{4}-/.test(x.key)).length + " günlük yedek var" : "✓ Otomatik yedek açık · ilk yedek kayıt ekleyince alınır";
+    all.forEach(x => {
+      const row = el("div","item"); row.append(el("div","ico", x.key === "geri-alma" ? "↩️" : x.key === "silme-oncesi" ? "🗑️" : "🗓️"));
+      const mid = el("div","mid");
+      const dt = new Date(x.at);
+      mid.append(el("div","t", x.key === "geri-alma" ? "Son geri yüklemeden önceki hâl" : x.key === "silme-oncesi" ? "Son silmeden önceki hâl" : (x.key === today() ? "Bugün" : dt.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"}))),
+        el("div","s", "Saat " + dt.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"}) + " · " + x.receipts.length + " harcama · " + x.records.length + " diğer kayıt"));
+      const b = el("button","mini ghost","Bu güne dön"); b.onclick = () => restoreSnap(x);
+      row.append(mid, b); out.append(row);
+    });
+  }
+  async function restoreSnap(x){
+    const label = x.key === "geri-alma" ? "son geri yüklemeden önceki hâline" : x.key === "silme-oncesi" ? "son silmeden önceki hâline" : new Date(x.at).toLocaleDateString("tr-TR",{day:"numeric",month:"long"}) + " tarihindeki hâline";
+    if (!await confirmBox("Tüm kayıtların " + label + " dönsün mü? Şu anki hâlin de ayrıca saklanır; istersen geri alabilirsin.", "Geri dön")) return;
+    try {
+      await takeSnap("geri-alma");
+      await DB.replaceAll(x.receipts, x.records);
+      if (x.settings) { state.settings = Object.assign({}, DEFAULT_SETTINGS, x.settings); if (!state.settings.catBudgets) state.settings.catBudgets = {}; saveSettings(); fillSettings(); }
+      const tr = ls.get("fd.photoTrash", {}); x.receipts.forEach(r => { delete tr[r.id]; dropPhotoUrl(r.id); }); ls.set("fd.photoTrash", tr);
+      clearTimeout(snapTimer); await load(); clearTimeout(snapTimer); renderSnaps(); toast("Geri dönüldü ✓");
+    } catch(e){ toast("Geri dönülemedi, tekrar dene."); }
+  }
+  async function cleanPhotoTrash(){
+    const tr = ls.get("fd.photoTrash", {}), lim = Date.now() - (SNAP_KEEP + 1) * 864e5, live = new Set(state.receipts.map(r=>r.id));
+    for (const [id, t] of Object.entries(tr)) { if (live.has(id)) { delete tr[id]; continue; } if (t < lim) { try { await DB.delPhoto(id); } catch(e){} delete tr[id]; } }
+    ls.set("fd.photoTrash", tr);
+  }
+  // ---- Haftalık telefon dışı yedek hatırlatması
+  function backupDue(){
+    if (state.settings.aBak === false) return 0;
+    if (state.receipts.length + state.records.length < 3) return 0;
+    const last = ls.get("fd.lastBackup", 0), first = ls.get("fd.firstUse", 0) || Date.now();
+    const age = (Date.now() - (last || first)) / 864e5;
+    return age >= 7 ? Math.floor(age) : 0;
+  }
+  function renderBackupNag(){
+    const age = backupDue(), snooze = ls.get("fd.bakSnooze", 0), show = age && Date.now() - snooze > 3*864e5;
+    $("bakCard").classList.toggle("hidden", !show);
+    if (show) $("bakText").textContent = (ls.get("fd.lastBackup", 0) ? "Son yedeğin " + age + " gün önce alındı." : "Hiç telefon dışına yedek almadın.") + " Telefonun kaybolursa kayıtların gitmesin: tek dokunuş, sonra \"Dosyalara Kaydet\" → iCloud Drive ya da Google Drive.";
   }
 
   // ================= Uygulama kilidi =================
@@ -1825,8 +1956,8 @@ Kurallar:
     $("lock").classList.remove("show");
     const ok = await confirmBox("Şifreyi unuttuysan kilidi kaldırmanın tek yolu bu telefondaki TÜM kayıtları silmek. Yedeğin varsa sonra geri yükleyebilirsin. Her şey silinsin mi?", "Hepsini sil");
     if (!ok) { showLock("unlock"); return; }
-    try { await DB.wipe(); } catch(e){}
-    ["fd.pin","fd.settings","fd.inapp","fd.sent","fd.gemKey","fd.gemModel"].forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
+    try { await DB.wipe(); } catch(e){} try { await KV.set("gemKey", ""); } catch(e){}
+    ["fd.pin","fd.settings","fd.inapp","fd.sent","fd.gemKey","fd.gemModel","fd.photoTrash","fd.lastBackup","fd.bakSnooze","fd.firstUse"].forEach(k => { try { localStorage.removeItem(k); } catch(_){} });
     location.reload();
   };
   function renderPin(){
@@ -1842,11 +1973,11 @@ Kurallar:
   function fillSettings(){
     const s = state.settings;
     $("inc").value = s.income ? numToInput(s.income) : ""; $("rate").value = s.rate || "27";
-    ["aBudget","aMonth","aCat","aRec","aWar"].forEach(k => $(k).checked = s[k] !== false);
+    ["aBudget","aMonth","aCat","aRec","aWar","aBak"].forEach(k => $(k).checked = s[k] !== false);
   }
   $("inc").addEventListener("input", () => { state.settings.income = parseNum($("inc").value); saveSettings(); renderCalc(yearItems()); });
   $("rate").addEventListener("change", () => { state.settings.rate = $("rate").value; saveSettings(); renderCalc(yearItems()); });
-  ["aBudget","aMonth","aCat","aRec","aWar"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); }));
+  ["aBudget","aMonth","aCat","aRec","aWar","aBak"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); renderBackupNag(); }));
 
   // ---- Gezinme: üstteki geri tuşu + telefonun kendi geri hareketi ----
   const VIEWS = { list:["Fiş & Fatura Defteri","📱 Kayıtların sadece bu telefonda"], budget:["Bütçe","Gelir, bütçe, ödemeler, hedefler"],
@@ -1906,8 +2037,10 @@ Kurallar:
   $("pStart").addEventListener("change", () => { state.settings.pStart = $("pStart").value; saveSettings(); render(); checkAlerts();
     toast(isCal() ? "Bütçe artık takvim ayına göre" : "Bütçe artık maaş gününden maaş gününe ✓"); });
   fillSettings();
-  load().then(checkAlerts);
-  window.__fd = { parseReceipt, allocs, state, periodOf, ymd };
+  if (!ls.get("fd.firstUse", 0)) ls.set("fd.firstUse", Date.now());
+  restoreGemKey();
+  load().then(() => { cleanPhotoTrash(); takeSnap().catch(()=>{}); checkAlerts(); });
+  window.__fd = { parseReceipt, allocs, state, periodOf, ymd, takeSnap, DB };
 })();
 </script>
 </body>

@@ -17,7 +17,7 @@ Fiş ve faturalarını telefonunda takip etmeni sağlayan ücretsiz bir uygulama
 - **Ödeme yöntemi:** Kredi kartı, banka kartı, nakit, havale.
 
 ### 🧾 Fiş ve fatura
-- **🤖 Yapay zeka ile fiş okuma (Gemini):** Fişin fotoğrafını çekersin; işyeri, tarih, tutar, KDV, belge no, belge türü ve kategori kendiliğinden dolar. ⚙️ Ayarlar'a ücretsiz Gemini anahtarını bir kez yapıştırman yeterli ([anahtar al](https://aistudio.google.com/apikey)). Anahtar sadece telefonunda saklanır.
+- **🤖 Yapay zeka ile fiş okuma (Gemini):** Fişin fotoğrafını çekersin; işyeri, tarih, tutar, KDV, belge no, belge türü ve kategori kendiliğinden dolar. ⚙️ Ayarlar'a ücretsiz Gemini anahtarını (AQ. ile başlar) bir kez yapıştırman yeterli ([anahtar al](https://aistudio.google.com/apikey)). Anahtar sadece telefonunda saklanır ve bir daha istenmez; Google anahtarı reddederse (süresi dolmuş, eksik kopyalanmış vb.) uygulama nedenini Türkçe açıklar.
 - **📷 İnternetsiz yedek okuyucu:** Anahtar yoksa ya da internet yoksa fiş, telefonun içindeki okuyucuyla okunur.
 - **💰 Vergi indirimi hesabı:** Eğitim ve sağlık harcamalarını ayırır, belgesi uygun olmayanlar için "FATURA İSTE" uyarısı verir, tahmini vergi avantajını hesaplar.
 - **🛡️ Garanti takibi:** Garantisi bitmek üzere olan ürünler.
@@ -29,7 +29,10 @@ Bütçe %80 / aşım, gelirden fazla harcama, geçen aya göre artış, kategori
 Gelir-gider grafiği (12 ay), aylık harcama, kategoriler, en çok harcanan yerler, ödeme yöntemleri, günlük ortalama, sabit giderler, ödenen KDV. Excel'de açılan CSV dışa aktarma.
 
 ### 🔒 Güvenlik ve yedek
-4 haneli uygulama kilidi. Fotoğraflar dahil tüm verilerin tek dosyada yedeklenip geri yüklenmesi.
+- 4 haneli uygulama kilidi.
+- **Otomatik yedek:** Her gün kendiliğinden, son 10 gün saklanır; ayrıca her silmeden önce. Tek dokunuşla o güne dönülür.
+- **Haftalık hatırlatma:** Telefon dışına (iCloud Drive / Google Drive) tek dokunuşla yedek.
+- Fotoğraflar dahil tüm verilerin tek dosyada yedeklenip geri yüklenmesi.
 
 ## Telefona kurulum
 
