@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fiş & Fatura Defteri</title>
+<meta name="description" content="Fiş ve faturalarını takip et, vergi indirimini hesapla, aylık harcama artışında bildirim al.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fiş Defteri">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6f5; --card:#ffffff; --ink:#14201c; --muted:#66736e; --line:#e3e8e6;
+    --accent:#0f766e; --accent-ink:#ffffff; --accent-soft:#e2f3f0;
+    --gold:#b7791f; --gold-soft:#fbf1dd; --red:#c53030; --red-soft:#fde8e8; --green:#2f855a;
+    --shadow:0 1px 2px rgba(16,24,20,.05),0 4px 16px rgba(16,24,20,.06);
+    --r:18px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0e1412; --card:#17201d; --ink:#e8efec; --muted:#93a19b; --line:#26322e;
+      --accent:#2dd4bf; --accent-ink:#06201c; --accent-soft:#123632;
+      --gold:#f6c26b; --gold-soft:#3a2d14; --red:#fc8181; --red-soft:#3b1d1d; --green:#68d391;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .wrap{max-width:720px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 18px}
+  header.top h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0}
+  header.top .sub{color:var(--muted);font-size:13px;margin-top:2px}
+  .hright{display:flex;gap:8px;align-items:center}
+  .iconbtn{border:1px solid var(--line);background:var(--card);border-radius:999px;width:40px;height:40px;display:grid;place-items:center;font-size:18px;cursor:pointer}
+  select.pill{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 30px 8px 14px;font-weight:600;height:40px;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+
+  .alerts{margin-bottom:14px;display:flex;flex-direction:column;gap:8px}
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--gold-soft);font-size:13.5px}
+  .alert.red{background:var(--red-soft)}
+  .alert .x{margin-left:auto;background:none;border:0;font-size:18px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+  .stat{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+  .stat .k{font-size:12.5px;color:var(--muted);font-weight:500}
+  .stat .v{font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stat.hero{grid-column:1/-1;background:var(--accent);color:var(--accent-ink)}
+  .stat.hero .k{color:inherit;opacity:.85}
+  .stat.hero .v{font-size:30px}
+  .stat.hero .cmp{font-size:13px;font-weight:600;margin-top:6px;opacity:.95}
+  .stat.hero .budget{margin-top:12px}
+  .stat.hero .btrack{height:8px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+  .stat.hero .bfill{height:100%;border-radius:99px;background:#fff}
+  .stat.hero .bfill.over{background:#fed7d7}
+  .stat.hero .blbl{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;opacity:.9}
+  .stat.tax .v{color:var(--gold)}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:12px}
+  .search{flex:1;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:11px 14px;outline:none;min-width:0}
+  .search:focus{border-color:var(--accent)}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px 8px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .chip.taxchip.on{background:var(--gold);border-color:var(--gold);color:#fff}
+
+  .month{margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:baseline}
+  .month h3{margin:0;font-size:14px;font-weight:700}
+  .month span{color:var(--muted);font-size:13px;font-weight:600}
+  .list{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .row{display:flex;align-items:center;gap:13px;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+  .row:first-child{border-top:0}
+  .row:active{background:var(--accent-soft)}
+  .ico{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:20px;background:var(--bg);flex:0 0 auto;overflow:hidden}
+  .ico img{width:100%;height:100%;object-fit:cover}
+  .row .mid{flex:1;min-width:0}
+  .row .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .s{color:var(--muted);font-size:12.5px;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .row .amt{font-weight:700;white-space:nowrap;text-align:right}
+  .row .amt small{display:block;color:var(--muted);font-weight:500;font-size:11.5px}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.02em}
+  .tag.ok{background:var(--gold-soft);color:var(--gold)}
+  .tag.warn{background:var(--red-soft);color:var(--red)}
+  .empty{text-align:center;padding:56px 20px;color:var(--muted)}
+  .empty .big{font-size:44px;margin-bottom:10px}
+  .empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:6px}
+
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .card h2{font-size:16px;margin:0 0 4px;font-weight:700}
+  .card p.lead{margin:0 0 14px;color:var(--muted);font-size:13.5px}
+  .bar{margin:12px 0}
+  .bar .lbl{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;gap:10px}
+  .bar .lbl b{font-weight:600}
+  .bar .track{height:9px;background:var(--bg);border-radius:99px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--accent);border-radius:99px}
+  .months{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:10px}
+  .months .m{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .months .col{width:100%;max-width:30px;background:var(--accent);border-radius:7px 7px 3px 3px;min-height:3px}
+  .months .col.zero{background:var(--line)}
+  .months .col.over{background:var(--red)}
+  .months .ml{font-size:10.5px;color:var(--muted);font-weight:600}
+
+  .calc .line{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+  .calc .line:first-child{border-top:0}
+  .calc .line b{font-weight:700;white-space:nowrap}
+  .calc .line.total{font-size:16px}
+  .calc .line.total b{color:var(--gold);font-size:20px}
+  .info h3{font-size:14px;margin:18px 0 6px}
+  .info ul,.info ol{margin:0;padding-left:20px}
+  .info li{margin:6px 0;font-size:14px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:14px}
+
+  .btn{border:0;border-radius:14px;padding:13px 18px;font-weight:700;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+  .btn.ghost{background:var(--bg);color:var(--ink)}
+  .btn.danger{background:var(--red-soft);color:var(--red)}
+  .btn.gold{background:var(--gold-soft);color:var(--gold)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.block{width:100%}
+  .btn + .btn.block{margin-top:10px}
+  .linkbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 8px}
+
+  .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+  .setrow:first-of-type{border-top:0}
+  .setrow .tx b{display:block;font-weight:600;font-size:14.5px}
+  .setrow .tx span{color:var(--muted);font-size:12.5px}
+  .switch{position:relative;width:50px;height:30px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .switch span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;cursor:pointer}
+  .switch span:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .switch input:checked + span{background:var(--accent)}
+  .switch input:checked + span:before{transform:translateX(20px)}
+  .perm{font-size:13px;font-weight:600;padding:10px 12px;border-radius:12px;margin-bottom:12px}
+  .perm.ok{background:var(--accent-soft);color:var(--accent)}
+  .perm.no{background:var(--red-soft);color:var(--red)}
+
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+  nav.tabs .in{max-width:720px;width:100%;display:flex;align-items:center;justify-content:space-around;padding:8px 10px}
+  nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:600;color:var(--muted);padding:6px 12px;cursor:pointer}
+  nav.tabs button .i{font-size:20px;line-height:1}
+  nav.tabs button.on{color:var(--accent)}
+  nav.tabs .add{width:56px;height:56px;border-radius:18px;background:var(--accent);color:var(--accent-ink);font-size:30px;font-weight:400;display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 18px rgba(15,118,110,.35);padding:0}
+
+  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .sheet-bg.show{display:flex}
+  .sheet{background:var(--card);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));animation:up .22s ease}
+  @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 14px}
+  .sheet h2{margin:0 0 16px;font-size:19px;font-weight:800}
+  .photo{display:block;border:2px dashed var(--line);border-radius:16px;padding:16px;text-align:center;margin-bottom:16px;cursor:pointer}
+  .photo img{max-width:100%;max-height:220px;border-radius:10px;display:block;margin:0 auto}
+  .photo .ph{color:var(--muted);font-size:14px;padding:10px 0}
+  .photo .ph b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+  .ocr{display:none;margin:-4px 0 16px;text-align:center}
+  .ocr.show{display:block}
+  .ocr-msg{font-size:13px;color:var(--muted);margin-top:8px;min-height:1em}
+  .ocr-msg.busy{color:var(--gold);font-weight:600}
+  .prog{height:6px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:8px;display:none}
+  .prog.show{display:block}
+  .prog div{height:100%;width:0;background:var(--gold);transition:width .2s}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .f{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;min-width:0}
+  .f.full{grid-column:1/-1}
+  .f label{font-size:12.5px;font-weight:600;color:var(--muted)}
+  .f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;outline:none;width:100%;min-width:0;-webkit-appearance:none;appearance:none}
+  .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent)}
+  .elig{border-radius:12px;padding:11px 13px;font-size:13px;margin:4px 0 16px}
+  .elig.ok{background:var(--gold-soft)}
+  .elig.no{background:var(--red-soft)}
+  .elig.na{display:none}
+  .actions{display:flex;gap:10px;margin-top:6px}
+  .actions .btn{flex:1}
+  .dialog{background:var(--card);border-radius:20px;padding:22px;max-width:360px;width:calc(100% - 40px);margin:auto;align-self:center}
+  .dialog p{margin:0 0 18px}
+  .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  .view{display:none}
+  .view.on{display:block}
+  .hidden{display:none!important}
+  .backbar{display:flex;align-items:center;gap:8px;margin:-6px 0 14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Fiş & Fatura Defteri</h1>
+      <div class="sub">📱 Kayıtların sadece bu telefonda</div>
+    </div>
+    <div class="hright">
+      <select class="pill" id="yearSel" aria-label="Yıl"></select>
+      <button class="iconbtn" id="setBtn" aria-label="Ayarlar">⚙️</button>
+    </div>
+  </header>
+
+  <!-- FİŞLER -->
+  <section class="view on" id="v-list">
+    <div class="alerts" id="alertsOut"></div>
+    <div class="stats">
+      <div class="stat hero">
+        <div class="k" id="sMonthLbl">Bu ay</div>
+        <div class="v" id="sMonth">₺0</div>
+        <div class="cmp" id="sMonthCmp"></div>
+        <div class="budget hidden" id="sBudget">
+          <div class="btrack"><div class="bfill" id="sBudgetFill"></div></div>
+          <div class="blbl"><span id="sBudgetL"></span><span id="sBudgetR"></span></div>
+        </div>
+      </div>
+      <div class="stat"><div class="k" id="sYearLbl">Yıl toplamı</div><div class="v" id="sTotal">₺0</div></div>
+      <div class="stat tax"><div class="k">Vergiden düşülebilir</div><div class="v" id="sTax">₺0</div></div>
+    </div>
+    <div class="toolbar"><input class="search" id="q" type="search" placeholder="İşyeri, not veya belge no ara…"></div>
+    <div class="chips" id="chips"></div>
+    <div id="listOut"></div>
+  </section>
+
+  <!-- RAPOR -->
+  <section class="view" id="v-report">
+    <div class="card">
+      <h2>Aylık harcama</h2>
+      <p class="lead" id="monthLead">Seçili yıl</p>
+      <div class="months" id="monthsOut"></div>
+    </div>
+    <div class="card">
+      <h2>Kategorilere göre</h2>
+      <p class="lead">Paran en çok nereye gidiyor</p>
+      <div id="catOut"></div>
+    </div>
+    <div class="card">
+      <h2>Ödenen KDV</h2>
+      <p class="lead">Seçili yılda fişlerinde ödediğin toplam KDV</p>
+      <div class="calc"><div class="line total"><span>Toplam KDV</span><b id="sVat">₺0</b></div></div>
+    </div>
+    <div class="card">
+      <h2>Garantisi biten ürünler</h2>
+      <p class="lead">Önümüzdeki 60 gün içinde garantisi dolacaklar</p>
+      <div id="warrOut"></div>
+    </div>
+    <div class="card">
+      <h2>Dışa aktar</h2>
+      <p class="lead">Seçili yılın kayıtlarını Excel'de açılabilen CSV olarak indir. Mali müşavirine göndermek için ideal.</p>
+      <button class="btn block" id="csvBtn">CSV indir</button>
+    </div>
+  </section>
+
+  <!-- VERGİ -->
+  <section class="view" id="v-tax">
+    <div class="card calc">
+      <h2>Vergi indirimi hesabı</h2>
+      <p class="lead">Eğitim ve sağlık harcamaların, yıllık beyannamede beyan ettiğin gelirin %10'una kadar matrahtan düşülür.</p>
+      <div class="grid">
+        <div class="f"><label for="inc">Beyan edeceğin yıllık gelir (₺)</label><input id="inc" inputmode="decimal" placeholder="örn. 600.000"></div>
+        <div class="f"><label for="rate">Gelir vergisi dilimin</label>
+          <select id="rate"><option value="15">%15</option><option value="20">%20</option><option value="27" selected>%27</option><option value="35">%35</option><option value="40">%40</option></select></div>
+      </div>
+      <div id="calcOut"></div>
+      <div class="note">Bu bir tahmindir. Kesin tutarı beyannameni hazırlarken Hazır Beyan sistemi veya mali müşavirin hesaplar.</div>
+    </div>
+    <div class="card info">
+      <h2>Bilmen gerekenler</h2>
+      <h3>Kim yararlanabilir?</h3>
+      <ul>
+        <li><b>Yıllık gelir vergisi beyannamesi verenler:</b> kira geliri, serbest meslek, şahıs şirketi, birden fazla işverenden belli sınırı aşan maaş alanlar gibi.</li>
+        <li><b>Sadece tek işverenden maaş alıyor ve beyanname vermiyorsan</b> bu indirimden genelde yararlanamazsın. Eski "ücretlilere vergi iadesi" (fiş biriktirme) sistemi yıllar önce kaldırıldı.</li>
+      </ul>
+      <h3>Hangi harcamalar?</h3>
+      <ul>
+        <li><b>Sağlık:</b> doktor, hastane, diş, ilaç, gözlük/lens, tahlil vb.</li>
+        <li><b>Eğitim:</b> okul, kurs, kırtasiye, okul servisi, kitap vb.</li>
+        <li>Kendin, eşin ve küçük çocukların (18 yaş altı ya da 25 yaş altı öğrenci) için yapılmış olmalı.</li>
+        <li>Harcama <b>Türkiye'de</b> yapılmış olmalı. Tutar <b>KDV dahil</b> dikkate alınır.</li>
+      </ul>
+      <h3>Belge kuralı (en önemli kısım)</h3>
+      <ul>
+        <li><b>Yazar kasa fişi kabul edilmez.</b> Senin adına düzenlenmiş fatura, e-Arşiv fatura, e-Fatura veya serbest meslek makbuzu gerekir.</li>
+        <li>Eczanede, kırtasiyede, gözlükçüde ödeme yaparken <b>"adıma fatura kesin"</b> de ve TC kimlik numaranı ver.</li>
+        <li>Belgeleri <b>5 yıl</b> sakla. Uygulama fotoğrafları senin için tutar.</li>
+      </ul>
+      <h3>Ne zaman?</h3>
+      <ul>
+        <li>Her yılın harcaması, bir sonraki yılın <b>Mart ayında</b> verilen beyannamede indirilir. Kullanılmayan kısım sonraki yıla devretmez.</li>
+      </ul>
+      <div class="note">Genel bilgilendirmedir, mali müşavir görüşü yerine geçmez. Kaynak: GİB eğitim ve sağlık harcamaları rehberi.</div>
+    </div>
+  </section>
+
+  <!-- AYARLAR -->
+  <section class="view" id="v-settings">
+    <div class="backbar"><button class="linkbtn" id="backBtn">‹ Geri</button></div>
+
+    <div class="card" id="installCard">
+      <h2>📲 Telefona uygulama olarak kur</h2>
+      <p class="lead">Ana ekranına simge olarak eklenir, internetsiz de açılır. Bildirimler için bu adım gerekli.</p>
+      <button class="btn block hidden" id="installBtn">Uygulamayı yükle</button>
+      <div class="info" id="installHelp">
+        <h3>iPhone (Safari)</h3>
+        <ol><li>Alttaki <b>Paylaş</b> simgesine (kutudan çıkan ok) dokun.</li><li><b>Ana Ekrana Ekle</b>'yi seç, sonra <b>Ekle</b>'ye bas.</li><li>Uygulamayı artık ana ekrandaki simgeden aç.</li></ol>
+        <h3>Android (Chrome)</h3>
+        <ol><li>Sağ üstteki <b>⋮</b> menüsüne dokun.</li><li><b>Uygulamayı yükle</b> ya da <b>Ana ekrana ekle</b>'yi seç.</li></ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔔 Harcama bildirimleri</h2>
+      <p class="lead">Bu ayki harcaman artınca telefonuna bildirim gelir.</p>
+      <div class="perm" id="permState"></div>
+      <button class="btn block" id="permBtn">Bildirimlere izin ver</button>
+      <div style="height:8px"></div>
+      <div class="f"><label for="budget">Aylık harcama bütçen (₺) — boş bırakabilirsin</label><input id="budget" inputmode="decimal" placeholder="örn. 25.000"></div>
+      <div class="setrow"><div class="tx"><b>Bütçe uyarısı</b><span>Bütçenin %80'ine gelince ve aşınca</span></div><label class="switch"><input type="checkbox" id="aBudget" checked><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Geçen aya göre artış</b><span>Geçen ayın aynı dönemine göre %25'ten fazla harcayınca ve geçen ayın toplamını geçince</span></div><label class="switch"><input type="checkbox" id="aMonth" checked><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Kategori artışı</b><span>Bir kategoride son 3 ay ortalamasının 1,5 katını geçince (örn. market, akaryakıt)</span></div><label class="switch"><input type="checkbox" id="aCat" checked><span></span></label></div>
+      <div class="setrow"><div class="tx"><b>Garanti hatırlatma</b><span>Bir ürünün garantisinin bitmesine 30 gün kala</span></div><label class="switch"><input type="checkbox" id="aWar" checked><span></span></label></div>
+      <button class="btn ghost block" id="testNotif" style="margin-top:8px">Deneme bildirimi gönder</button>
+      <div class="note">Bildirimler, fiş eklediğinde ve uygulamayı açtığında kontrol edilir. Her uyarı ayda bir kez gelir, seni rahatsız etmez.</div>
+    </div>
+
+    <div class="card">
+      <h2>💾 Yedekleme</h2>
+      <p class="lead">Kayıtların sadece bu telefonda duruyor. Telefon değiştirirsen ya da uygulamayı silersen kaybolmasın diye ayda bir yedek al ve Drive'a / WhatsApp'ta kendine gönder.</p>
+      <button class="btn block" id="backupBtn">Yedek al (fotoğraflar dahil)</button>
+      <button class="btn ghost block" id="restoreBtn">Yedekten geri yükle</button>
+      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      <div class="note" id="lastBackup"></div>
+    </div>
+
+    <div class="card">
+      <h2>ℹ️ Hakkında</h2>
+      <p class="lead" style="margin:0">Fiş & Fatura Defteri · sürüm <span id="ver"></span><br>Üyelik gerektirmez, ücretsizdir. Fiş okuma telefonunun içinde yapılır; fişlerin hiçbir sunucuya gönderilmez.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs"><div class="in">
+  <button class="on" data-v="list"><span class="i">🧾</span>Fişler</button>
+  <button class="add" id="addBtn" aria-label="Yeni fiş ekle">+</button>
+  <button data-v="report"><span class="i">📊</span>Rapor</button>
+  <button data-v="tax"><span class="i">💰</span>Vergi</button>
+</div></nav>
+
+<!-- FORM -->
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="grab"></div>
+    <h2 id="formTitle">Yeni fiş / fatura</h2>
+    <label class="photo" id="photoBox">
+      <input type="file" id="file" accept="image/*" capture="environment" hidden>
+      <div class="ph" id="photoPh"><b>📷 Fişin fotoğrafını çek</b>bilgiler otomatik dolar</div>
+      <img id="photoImg" class="hidden" alt="Fiş fotoğrafı">
+    </label>
+    <div style="text-align:center;margin:-8px 0 12px"><button type="button" class="linkbtn" id="galBtn">veya galeriden seç</button></div>
+    <input type="file" id="fileGal" accept="image/*" hidden>
+    <div class="ocr" id="ocrBox">
+      <div class="ocr-msg" id="ocrMsg"></div>
+      <div class="prog" id="prog"><div id="progFill"></div></div>
+      <button class="linkbtn hidden" id="ocrRetry" type="button" style="margin-top:6px">↻ Tekrar oku</button>
+    </div>
+    <form id="form" autocomplete="off" novalidate>
+      <div class="grid">
+        <div class="f full"><label for="fStore">İşyeri</label><input id="fStore" placeholder="örn. Migros, Acıbadem Eczanesi"></div>
+        <div class="f"><label for="fDate">Tarih</label><input id="fDate" type="date"></div>
+        <div class="f"><label for="fTotal">Tutar (KDV dahil ₺)</label><input id="fTotal" inputmode="decimal" placeholder="0,00"></div>
+        <div class="f"><label for="fCat">Kategori</label><select id="fCat"></select></div>
+        <div class="f"><label for="fVat">KDV tutarı (₺)</label><input id="fVat" inputmode="decimal" placeholder="0,00"></div>
+        <div class="f"><label for="fDoc">Belge türü</label><select id="fDoc"></select></div>
+        <div class="f"><label for="fWho">Kimin için</label><select id="fWho"><option value="ben">Kendim</option><option value="es">Eşim</option><option value="cocuk">Çocuğum</option><option value="diger">Diğer</option></select></div>
+        <div class="f"><label for="fNo">Belge no</label><input id="fNo" placeholder="isteğe bağlı"></div>
+        <div class="f"><label for="fWar">Garanti bitişi</label><input id="fWar" type="date"></div>
+        <div class="f full"><label for="fNote">Not</label><textarea id="fNote" rows="2" placeholder="isteğe bağlı"></textarea></div>
+      </div>
+      <div class="elig na" id="eligBox"></div>
+      <div class="actions">
+        <button type="button" class="btn danger hidden" id="delBtn">Sil</button>
+        <button type="button" class="btn ghost" id="cancelBtn">Vazgeç</button>
+        <button type="submit" class="btn" id="saveBtn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ONAY -->
+<div class="sheet-bg" id="confirmBg">
+  <div class="dialog">
+    <p id="confirmText">Emin misin?</p>
+    <div class="actions"><button class="btn ghost" id="cNo">Vazgeç</button><button class="btn danger" id="cYes">Evet</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+  const APP_VERSION = "1.0.0";
+  const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+
+  // ================= Sabitler =================
+  const CATS = [
+    {k:"market",n:"Market",e:"🛒"},{k:"saglik",n:"Sağlık",e:"💊"},{k:"egitim",n:"Eğitim",e:"🎓"},
+    {k:"akaryakit",n:"Akaryakıt",e:"⛽"},{k:"restoran",n:"Yeme-içme",e:"🍽️"},{k:"faturalar",n:"Faturalar",e:"💡"},
+    {k:"giyim",n:"Giyim",e:"👕"},{k:"elektronik",n:"Elektronik",e:"📱"},{k:"ev",n:"Ev & Yapı",e:"🛋️"},
+    {k:"ulasim",n:"Ulaşım",e:"🚌"},{k:"arac",n:"Araç bakım",e:"🔧"},{k:"diger",n:"Diğer",e:"📦"}
+  ];
+  const DOCS = [
+    {k:"fis",n:"Yazar kasa fişi"},{k:"earsiv",n:"e-Arşiv fatura"},{k:"efatura",n:"e-Fatura"},
+    {k:"kagit",n:"Kağıt fatura"},{k:"smm",n:"Serbest meslek makbuzu"},{k:"diger",n:"Diğer"}
+  ];
+  const TAX_CATS = ["saglik","egitim"];
+  const VALID_DOCS = ["earsiv","efatura","kagit","smm"];
+  const catOf = k => CATS.find(c=>c.k===k) || CATS[CATS.length-1];
+  const docOf = k => DOCS.find(d=>d.k===k) || DOCS[DOCS.length-1];
+  const isTaxCat = r => TAX_CATS.includes(r.cat);
+  const isEligible = r => isTaxCat(r) && VALID_DOCS.includes(r.doc);
+  const MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+
+  // ================= Yardımcılar =================
+  const $ = id => document.getElementById(id);
+  const fmt = n => new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:2}).format(n||0);
+  const fmt0 = n => new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",maximumFractionDigits:0}).format(n||0);
+  const parseNum = s => {
+    if (typeof s === "number") return isFinite(s) ? Math.round(s*100)/100 : 0;
+    s = String(s||"").trim().replace(/[₺\s*]/g,"").replace(/TL$/i,"");
+    if (!s) return 0;
+    if (s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,"");
+    const n = parseFloat(s); return isFinite(n) ? Math.round(n*100)/100 : 0;
+  };
+  const numToInput = n => n ? String(n).replace(".",",") : "";
+  const pad = n => String(n).padStart(2,"0");
+  const ymd = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  const today = () => ymd(new Date());
+  const ymOf = d => d.getFullYear()+"-"+pad(d.getMonth()+1);
+  const el = (tag, cls, text) => { const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
+  const newId = () => "r" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const fmtDate = d => { if(!d) return ""; const p=d.split("-"); return parseInt(p[2])+" "+(MONTHS[parseInt(p[1])-1]||"").slice(0,3); };
+  const sum = arr => arr.reduce((s,r)=>s+(r.total||0),0);
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2800); }
+  const ls = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); } catch(e){ return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  };
+
+  // ================= Veritabanı (IndexedDB, telefonun içinde) =================
+  const DB = (() => {
+    let dbp;
+    const open = () => dbp || (dbp = new Promise((res, rej) => {
+      const r = indexedDB.open("fis-fatura-defteri", 1);
+      r.onupgradeneeded = () => { const d = r.result;
+        if (!d.objectStoreNames.contains("receipts")) d.createObjectStore("receipts", {keyPath:"id"});
+        if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos"); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+    const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    const done = t => new Promise((res, rej) => { t.oncomplete = () => res(); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
+    return {
+      async all(){ const d = await open(); return req(d.transaction("receipts").objectStore("receipts").getAll()); },
+      async put(r){ const d = await open(); const t = d.transaction("receipts","readwrite"); t.objectStore("receipts").put(r); return done(t); },
+      async del(id){ const d = await open(); const t = d.transaction(["receipts","photos"],"readwrite"); t.objectStore("receipts").delete(id); t.objectStore("photos").delete(id); return done(t); },
+      async putPhoto(id, blob){ const d = await open(); const t = d.transaction("photos","readwrite"); t.objectStore("photos").put(blob, id); return done(t); },
+      async getPhoto(id){ const d = await open(); return req(d.transaction("photos").objectStore("photos").get(id)); }
+    };
+  })();
+  const photoUrls = new Map();
+  async function photoUrl(id){
+    if (photoUrls.has(id)) return photoUrls.get(id);
+    try { const b = await DB.getPhoto(id); if (!b) return null; const u = URL.createObjectURL(b); photoUrls.set(id, u); return u; } catch(e){ return null; }
+  }
+  function dropPhotoUrl(id){ const u = photoUrls.get(id); if (u) { URL.revokeObjectURL(u); photoUrls.delete(id); } }
+
+  // ================= Durum =================
+  const DEFAULT_SETTINGS = {income:0, rate:"27", budget:0, aBudget:true, aMonth:true, aCat:true, aWar:true};
+  const state = {
+    receipts: [], year: new Date().getFullYear(), cat:"all", taxOnly:false, q:"",
+    settings: Object.assign({}, DEFAULT_SETTINGS, ls.get("fd.settings", {}))
+  };
+  const saveSettings = () => ls.set("fd.settings", state.settings);
+
+  async function load(){
+    try { state.receipts = await DB.all(); }
+    catch(e){ state.receipts = []; toast("Kayıtlar açılamadı. Tarayıcı gizli modda olabilir."); }
+    render();
+  }
+
+  // ================= Render =================
+  const yearItems = () => state.receipts.filter(r => (r.date||"").slice(0,4) === String(state.year));
+  const monthItems = ym => state.receipts.filter(r => (r.date||"").slice(0,7) === ym);
+
+  function render(){
+    const years = new Set([new Date().getFullYear()]);
+    state.receipts.forEach(r => { const y=parseInt((r.date||"").slice(0,4)); if(y) years.add(y); });
+    const ys = [...years].sort((a,b)=>b-a), sel = $("yearSel");
+    if (sel.dataset.v !== ys.join(",")) { sel.innerHTML=""; ys.forEach(y=>{ const o=el("option",null,String(y)); o.value=y; sel.append(o); }); sel.dataset.v=ys.join(","); }
+    sel.value = state.year;
+
+    const items = yearItems();
+    $("sYearLbl").textContent = state.year + " toplamı";
+    $("sTotal").textContent = fmt(sum(items));
+    $("sVat").textContent = fmt(items.reduce((s,r)=>s+(r.vat||0),0));
+    $("sTax").textContent = fmt(sum(items.filter(isEligible)));
+    renderMonthCard(); renderAlerts();
+    renderChips(items); renderList(items); renderReport(items); renderCalc(items);
+  }
+
+  function monthStats(){
+    const now = new Date(); const ym = ymOf(now);
+    const prev = new Date(now.getFullYear(), now.getMonth()-1, 1); const pym = ymOf(prev);
+    const day = now.getDate();
+    const cur = sum(monthItems(ym));
+    const prevAll = monthItems(pym);
+    const prevTotal = sum(prevAll);
+    const prevSame = sum(prevAll.filter(r => parseInt(r.date.slice(8,10)) <= day));
+    return {ym, pym, cur, prevTotal, prevSame, now};
+  }
+
+  function renderMonthCard(){
+    const s = monthStats();
+    $("sMonthLbl").textContent = MONTHS[s.now.getMonth()] + " ayı harcaman";
+    $("sMonth").textContent = fmt(s.cur);
+    let cmp = "";
+    if (s.prevSame > 0) {
+      const p = Math.round((s.cur - s.prevSame) / s.prevSame * 100);
+      cmp = (p > 0 ? "▲ %"+p+" fazla" : p < 0 ? "▼ %"+Math.abs(p)+" az" : "Aynı") + " · geçen ayın aynı dönemine göre";
+    } else if (s.prevTotal > 0) cmp = "Geçen ay toplam: " + fmt0(s.prevTotal);
+    $("sMonthCmp").textContent = cmp;
+    const b = state.settings.budget;
+    $("sBudget").classList.toggle("hidden", !b);
+    if (b) {
+      const ratio = s.cur / b;
+      $("sBudgetFill").style.width = Math.min(100, ratio*100) + "%";
+      $("sBudgetFill").classList.toggle("over", ratio >= 1);
+      $("sBudgetL").textContent = "Bütçe %" + Math.round(ratio*100);
+      $("sBudgetR").textContent = ratio >= 1 ? fmt0(s.cur-b) + " aşıldı" : fmt0(b-s.cur) + " kaldı";
+    }
+  }
+
+  function renderChips(items){
+    const c = $("chips"); c.innerHTML="";
+    const used = new Set(items.map(r=>r.cat));
+    const mk = (label, on, fn, extra) => { const b=el("button","chip"+(on?" on":"")+(extra?" "+extra:""),label); b.type="button"; b.onclick=fn; c.append(b); };
+    mk("Tümü", state.cat==="all" && !state.taxOnly, ()=>{ state.cat="all"; state.taxOnly=false; render(); });
+    mk("💰 Vergiye uygun", state.taxOnly, ()=>{ state.taxOnly=!state.taxOnly; render(); }, "taxchip");
+    CATS.filter(k=>used.has(k.k)).forEach(k => mk(k.e+" "+k.n, state.cat===k.k, ()=>{ state.cat = state.cat===k.k ? "all" : k.k; render(); }));
+  }
+
+  function renderList(items){
+    const out = $("listOut"); out.innerHTML="";
+    const q = state.q.toLocaleLowerCase("tr");
+    const list = items.filter(r =>
+      (state.cat==="all" || r.cat===state.cat) && (!state.taxOnly || isEligible(r)) &&
+      (!q || [r.store,r.note,r.no].join(" ").toLocaleLowerCase("tr").includes(q)))
+      .sort((a,b)=> (b.date||"").localeCompare(a.date||"") || (b.createdAt||0)-(a.createdAt||0));
+    if (!list.length) {
+      const e = el("div","empty");
+      e.append(el("div","big", state.receipts.length ? "🔍" : "🧾"));
+      e.append(el("b",null, state.receipts.length ? "Bu filtreye uyan kayıt yok" : "Henüz fiş eklemedin"));
+      e.append(el("div",null, state.receipts.length ? "Filtreyi veya yılı değiştir." : "Alttaki + butonuna bas, fişin fotoğrafını çek; bilgiler otomatik dolar."));
+      out.append(e); return;
+    }
+    const groups = {};
+    list.forEach(r => { const k=(r.date||"").slice(0,7); (groups[k]=groups[k]||[]).push(r); });
+    Object.keys(groups).sort().reverse().forEach(k => {
+      const g = groups[k]; const m = parseInt(k.slice(5,7))-1;
+      const h = el("div","month"); h.append(el("h3",null,(MONTHS[m]||"")+" "+k.slice(0,4)), el("span",null,fmt(sum(g))));
+      out.append(h);
+      const box = el("div","list");
+      g.forEach(r => {
+        const c = catOf(r.cat);
+        const row = el("button","row"); row.type="button"; row.onclick=()=>openForm(r);
+        const ico = el("div","ico", c.e);
+        if (r.hasPhoto) photoUrl(r.id).then(u => { if (u) { const im=new Image(); im.alt=""; im.src=u; ico.textContent=""; ico.append(im); } });
+        const mid = el("div","mid"); mid.append(el("div","t", r.store||"(isimsiz)"));
+        const s = el("div","s"); s.append(document.createTextNode(fmtDate(r.date)+" · "+c.n));
+        if (isEligible(r)) s.append(el("span","tag ok","VERGİYE UYGUN"));
+        else if (isTaxCat(r)) s.append(el("span","tag warn","FATURA İSTE"));
+        mid.append(s);
+        const amt = el("div","amt", fmt(r.total)); if (r.vat) amt.append(el("small",null,"KDV "+fmt(r.vat)));
+        row.append(ico, mid, amt); box.append(row);
+      });
+      out.append(box);
+    });
+  }
+
+  function renderReport(items){
+    const mo = Array(12).fill(0); items.forEach(r=>{ const m=parseInt((r.date||"").slice(5,7))-1; if(m>=0) mo[m]+=r.total||0; });
+    const max = Math.max(...mo, 1), b = state.settings.budget, mOut=$("monthsOut"); mOut.innerHTML="";
+    mo.forEach((v,i)=>{ const m=el("div","m"); const col=el("div","col"+(v?"":" zero")+(b && v>b?" over":"")); col.style.height=Math.max(2,(v/max)*100)+"%"; col.title=MONTHS[i]+": "+fmt(v); m.append(col, el("div","ml",MONTHS[i].slice(0,3))); mOut.append(m); });
+    const nz = mo.filter(v=>v>0);
+    $("monthLead").textContent = nz.length ? state.year+" · aylık ortalama "+fmt0(nz.reduce((a,c)=>a+c,0)/nz.length)+(b?" · kırmızı: bütçe aşılan ay":"") : state.year+" · henüz veri yok";
+
+    const byCat = {}; items.forEach(r=>{ byCat[r.cat]=(byCat[r.cat]||0)+(r.total||0); });
+    const tot = Object.values(byCat).reduce((a,c)=>a+c,0), cOut=$("catOut"); cOut.innerHTML="";
+    const entries = Object.entries(byCat).sort((a,c)=>c[1]-a[1]);
+    if (!entries.length) cOut.append(el("div","note","Kayıt ekledikçe burada dağılımı göreceksin."));
+    const cmax = entries.length ? entries[0][1] : 1;
+    entries.forEach(([k,v])=>{ const c=catOf(k); const bar=el("div","bar"); const l=el("div","lbl"); l.append(el("b",null,c.e+"  "+c.n), el("span",null,fmt0(v)+"  ·  %"+Math.round(v/tot*100))); const t=el("div","track"); const f=el("div","fill"); f.style.width=(v/cmax*100)+"%"; t.append(f); bar.append(l,t); cOut.append(bar); });
+
+    const wOut=$("warrOut"); wOut.innerHTML="";
+    const now = new Date(today()); const lim = new Date(now); lim.setDate(lim.getDate()+60);
+    const ws = state.receipts.filter(r=>r.warranty && new Date(r.warranty)>=now && new Date(r.warranty)<=lim).sort((a,c)=>a.warranty.localeCompare(c.warranty));
+    if (!ws.length) wOut.append(el("div","note","Yakında garantisi dolacak ürün yok. Elektronik alırken \"Garanti bitişi\" tarihini girersen burada görürsün."));
+    const box = el("div","calc");
+    ws.forEach(r=>{ const days=Math.round((new Date(r.warranty)-now)/864e5); const line=el("div","line"); line.append(el("span",null,(r.store||"")+(r.note?" · "+r.note:"")), el("b",null,days===0?"bugün":days+" gün")); box.append(line); });
+    wOut.append(box);
+  }
+
+  function renderCalc(items){
+    const elig = items.filter(isEligible);
+    const sag = sum(elig.filter(r=>r.cat==="saglik")), egi = sum(elig.filter(r=>r.cat==="egitim"));
+    const missing = items.filter(r=>isTaxCat(r) && !isEligible(r));
+    const income = state.settings.income || 0, rate = parseInt(state.settings.rate)/100;
+    const cap = income*0.10, ded = income ? Math.min(sag+egi, cap) : 0;
+    const out=$("calcOut"); out.innerHTML="";
+    const line=(k,v,cls)=>{ const d=el("div","line"+(cls?" "+cls:"")); d.append(el("span",null,k), el("b",null,v)); out.append(d); };
+    line("Sağlık harcamaları (uygun belge)", fmt(sag));
+    line("Eğitim harcamaları (uygun belge)", fmt(egi));
+    line("Yasal üst sınır (gelirin %10'u)", income ? fmt(cap) : "gelirini gir");
+    line("Matrahtan düşülecek tutar", income ? fmt(ded) : "—");
+    line("Tahmini vergi avantajın", income ? fmt(ded*rate) : "—", "total");
+    if (missing.length) { const n=el("div","elig no"); n.style.marginTop="12px"; n.textContent="⚠️ "+missing.length+" sağlık/eğitim kaydın ("+fmt(sum(missing))+") fişle alınmış görünüyor. Bunlar indirime girmez; bir dahaki sefere adına fatura iste."; out.append(n); }
+    if (income && sag+egi > cap) out.append(el("div","note","Harcamaların %10 sınırını aşıyor; aşan kısım indirilemez ve sonraki yıla devretmez."));
+  }
+
+  // ================= Bildirimler =================
+  const notifSupported = () => "Notification" in window;
+  async function notify(title, body, tag){
+    if (!notifSupported() || Notification.permission !== "granted") return false;
+    const opts = { body, tag, icon:"icons/icon-192.png", badge:"icons/icon-192.png", lang:"tr" };
+    try {
+      const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+      if (reg && reg.showNotification) { await reg.showNotification(title, opts); return true; }
+      new Notification(title, opts); return true;
+    } catch(e){ return false; }
+  }
+  // Uygulama içi uyarılar (bildirim izni olmasa da görünür)
+  function addInAppAlert(key, text, level){
+    const list = ls.get("fd.inapp", []);
+    if (!list.some(a=>a.key===key)) { list.unshift({key, text, level, at:Date.now()}); ls.set("fd.inapp", list.slice(0,10)); }
+  }
+  function renderAlerts(){
+    const ym = ymOf(new Date());
+    const list = ls.get("fd.inapp", []).filter(a => a.key.startsWith(ym) || a.key.startsWith("war:"));
+    const out = $("alertsOut"); out.innerHTML = "";
+    list.slice(0,3).forEach(a => {
+      const d = el("div","alert"+(a.level==="red"?" red":"")); d.append(el("span",null,a.text));
+      const x = el("button","x","×"); x.setAttribute("aria-label","Kapat");
+      x.onclick = () => { ls.set("fd.inapp", ls.get("fd.inapp",[]).filter(b=>b.key!==a.key)); renderAlerts(); };
+      d.append(x); out.append(d);
+    });
+  }
+  async function fire(key, title, body, level){
+    const sent = ls.get("fd.sent", {});
+    if (sent[key]) return;
+    sent[key] = Date.now(); ls.set("fd.sent", sent);
+    addInAppAlert(key, title + " " + body, level);
+    await notify(title, body, key);
+  }
+  async function checkAlerts(){
+    const st = state.settings, s = monthStats(), ym = s.ym, mName = MONTHS[s.now.getMonth()];
+    if (st.aBudget && st.budget > 0) {
+      const ratio = s.cur / st.budget;
+      if (ratio >= 1) await fire(ym+":budget100", "🚨 Aylık bütçeni aştın", mName+" ayında "+fmt0(s.cur)+" harcadın. Bütçen "+fmt0(st.budget)+".", "red");
+      else if (ratio >= 0.8) await fire(ym+":budget80", "⚠️ Bütçenin %"+Math.round(ratio*100)+"'ine geldin", "Bu ay "+fmt0(s.cur)+" harcadın, "+fmt0(st.budget-s.cur)+" kaldı.");
+    }
+    if (st.aMonth) {
+      if (s.prevTotal > 0 && s.cur > s.prevTotal)
+        await fire(ym+":overprev", "📈 Geçen ayın toplamını geçtin", "Bu ay "+fmt0(s.cur)+" harcadın; geçen ayın tamamı "+fmt0(s.prevTotal)+" idi.", "red");
+      else if (s.prevSame >= 500 && s.cur > s.prevSame*1.25 && s.cur - s.prevSame >= 500) {
+        const p = Math.round((s.cur-s.prevSame)/s.prevSame*100);
+        await fire(ym+":pace", "📈 Harcaman artıyor", "Geçen ayın aynı dönemine göre %"+p+" fazla harcadın ("+fmt0(s.cur)+" / "+fmt0(s.prevSame)+").");
+      }
+    }
+    if (st.aCat) {
+      const cur = monthItems(ym);
+      const cats = [...new Set(cur.map(r=>r.cat))];
+      for (const c of cats) {
+        const vals = [];
+        for (let i=1;i<=3;i++){ const d=new Date(s.now.getFullYear(), s.now.getMonth()-i, 1); const v=sum(monthItems(ymOf(d)).filter(r=>r.cat===c)); if (v>0) vals.push(v); }
+        if (!vals.length) continue;
+        const avg = vals.reduce((a,b)=>a+b,0)/vals.length, now = sum(cur.filter(r=>r.cat===c));
+        if (now > avg*1.5 && now-avg >= 500)
+          await fire(ym+":cat:"+c, "📊 "+catOf(c).n+" harcaman arttı", "Bu ay "+fmt0(now)+"; son aylarda ortalama "+fmt0(avg)+" idi.");
+      }
+    }
+    if (st.aWar) {
+      const now = new Date(today());
+      for (const r of state.receipts) {
+        if (!r.warranty) continue;
+        const days = Math.round((new Date(r.warranty)-now)/864e5);
+        if (days >= 0 && days <= 30) await fire("war:"+r.id+":"+r.warranty, "🛡️ Garanti bitiyor", (r.store||"Ürün")+(r.note?" ("+r.note+")":"")+" garantisi "+days+" gün sonra bitiyor.");
+      }
+    }
+    renderAlerts();
+  }
+
+  function renderPerm(){
+    const p = $("permState"), b = $("permBtn");
+    if (!notifSupported()) {
+      p.className = "perm no";
+      p.textContent = isIOS() && !isStandalone() ? "iPhone'da bildirim için önce uygulamayı ana ekrana ekle (yukarıdaki adımlar), sonra uygulamayı oradan aç." : "Bu tarayıcı bildirim desteklemiyor. Uyarılar uygulamanın içinde görünecek.";
+      b.classList.add("hidden"); return;
+    }
+    const s = Notification.permission;
+    if (s === "granted") { p.className="perm ok"; p.textContent="✓ Bildirimler açık"; b.classList.add("hidden"); }
+    else if (s === "denied") { p.className="perm no"; p.textContent="Bildirimler kapalı. Telefonun Ayarlar > Bildirimler bölümünden bu uygulamaya izin ver."; b.classList.add("hidden"); }
+    else { p.className="perm no"; p.textContent="Bildirimler henüz kapalı."; b.classList.remove("hidden"); }
+  }
+  $("permBtn").onclick = async () => {
+    try { await Notification.requestPermission(); } catch(e){}
+    renderPerm();
+    if (Notification.permission === "granted") { toast("Bildirimler açıldı ✓"); checkAlerts(); }
+  };
+  $("testNotif").onclick = async () => {
+    const ok = await notify("🧾 Fiş Defteri", "Bildirimler çalışıyor. Harcaman artınca sana haber vereceğim.", "test");
+    toast(ok ? "Deneme bildirimi gönderildi" : "Önce bildirimlere izin ver.");
+  };
+
+  // ================= Kurulum (PWA) =================
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+  const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  let installEvt = null;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").classList.remove("hidden"); });
+  $("installBtn").onclick = async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch(e){} installEvt = null; $("installBtn").classList.add("hidden"); };
+  window.addEventListener("appinstalled", () => { $("installCard").classList.add("hidden"); toast("Uygulama yüklendi ✓"); });
+  if (isStandalone()) $("installCard").classList.add("hidden");
+  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+
+  // ================= Fiş okuma (OCR, telefonun içinde) =================
+  let tessPromise = null, worker = null;
+  function loadTesseract(){
+    if (window.Tesseract) return Promise.resolve();
+    return tessPromise || (tessPromise = new Promise((res, rej) => {
+      const s = document.createElement("script"); s.src = TESSERACT_URL; s.onload = res;
+      s.onerror = () => { tessPromise = null; rej(new Error("motor indirilemedi")); };
+      document.head.append(s);
+    }));
+  }
+  let progressCb = null;
+  async function getWorker(){
+    if (worker) return worker;
+    await loadTesseract();
+    worker = await Tesseract.createWorker("tur", 1, { logger: m => progressCb && progressCb(m) });
+    return worker;
+  }
+  // Fotoğrafı okumaya hazırla: gri ton + kontrast
+  async function prepForOcr(blob){
+    const img = await blobToImage(blob);
+    const target = 1700, s = Math.min(2, target / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth*s); c.height = Math.round(img.naturalHeight*s);
+    const ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0, c.width, c.height);
+    const d = ctx.getImageData(0,0,c.width,c.height), p = d.data;
+    let min=255, max=0; const g = new Uint8ClampedArray(p.length/4);
+    for (let i=0,j=0;i<p.length;i+=4,j++){ const v = (p[i]*0.299 + p[i+1]*0.587 + p[i+2]*0.114)|0; g[j]=v; if(v<min)min=v; if(v>max)max=v; }
+    const range = Math.max(1, max-min);
+    for (let i=0,j=0;i<p.length;i+=4,j++){ let v = (g[j]-min)*255/range; v = v < 128 ? v*0.85 : Math.min(255, v*1.1); p[i]=p[i+1]=p[i+2]=v; }
+    ctx.putImageData(d,0,0);
+    return c;
+  }
+
+  // ---- Fiş metnini çözümle ----
+  const AMT = /(\d{1,3}(?:[.\s]\d{3})+,\d{2}|\d+,\d{2}|\d+\.\d{2})(?!\d)/g;
+  const amountsIn = line => { const out=[]; let m; AMT.lastIndex=0; while((m=AMT.exec(line))) out.push(parseNum(m[1].replace(/\s/g,"."))); return out.filter(n=>n>0 && n<10000000); };
+  const up = s => s.toLocaleUpperCase("tr");
+  const CAT_RULES = [
+    ["saglik", /ECZA|HASTANE|TIP MERKEZ|SAĞLIK|SAGLIK|OPTİK|OPTIK|DİŞ|DIS HEK|KLİNİK|KLINIK|LABORATUVAR|POLİKLİNİK|MEDİKAL|MEDIKAL|DOKTOR|DR\./],
+    ["egitim", /KIRTASİYE|KIRTASIYE|KİTAP|KITAP|OKUL|KOLEJ|KURS|EĞİTİM|EGITIM|DERSHANE|ÜNİVERSİTE|AKADEMİ/],
+    ["akaryakit", /PETROL|OPET|SHELL|\bBP\b|AKARYAKIT|AYTEMİZ|AYTEMIZ|TOTALENERGIES|\bTOTAL\b|LUKOIL|\bPO\b|ALPET|KADOİL|MOIL|BENZİN|MOTORİN|LPG/],
+    ["market", /MİGROS|MIGROS|A101|\bBİM\b|\bBIM\b|\bŞOK\b|\bSOK\b|CARREFOUR|MARKET|GIDA|METRO|HAKMAR|\bFİLE\b|MACROCENTER|TARIM KREDİ|ONUR|BİZİM TOPTAN|KASAP|MANAV/],
+    ["restoran", /RESTORAN|RESTAURANT|CAFE|KAFE|LOKANTA|BURGER|PİDE|KEBAP|PASTANE|FIRIN|STARBUCKS|KAHVE|DÖNER|PİZZA|PIZZA|BÜFE|ÇİĞ KÖFTE/],
+    ["faturalar", /ENERJİSA|ENERJISA|\bCK\b|İGDAŞ|IGDAS|İSKİ|ISKI|TELEKOM|TURKCELL|VODAFONE|SUPERONLINE|ELEKTRİK|DOĞALGAZ|DOGALGAZ|\bSU\b İDARE|TÜRKNET|TTNET/],
+    ["elektronik", /TEKNOSA|MEDİAMARKT|MEDIAMARKT|MEDIA MARKT|VATAN|ELEKTRONİK|ELEKTRONIK|APPLE|SAMSUNG|BİLGİSAYAR|GSM|TELEFON/],
+    ["giyim", /WAIKIKI|DEFACTO|KOTON|GİYİM|GIYIM|TEKSTİL|ZARA|\bMAVİ\b|COLINS|FLO|AYAKKABI|BOYNER|H&M|PENTİ|İPEKYOL/],
+    ["ev", /IKEA|KOÇTAŞ|KOCTAS|BAUHAUS|MOBİLYA|TEKZEN|ENGLISH HOME|MADAME COCO|HIRDAVAT|YAPI MARKET|NALBUR/],
+    ["ulasim", /İSTANBULKART|ISTANBULKART|TAKSİ|METRO İST|OTOBÜS|HAVAYOLU|THY|PEGASUS|OTOPARK|İSPARK|HGS|OGS/],
+    ["arac", /OTO |OTOMOTİV|YEDEK PARÇA|LASTİK|SERVİS|OTO YIKAMA|AKÜ/]
+  ];
+  function parseReceipt(raw){
+    const lines = raw.split(/\r?\n/).map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
+    const U = lines.map(up), all = U.join("\n");
+    const r = {};
+    // Tarih
+    const dm = all.match(/(\d{2})[./-](\d{2})[./-](\d{4})/) || all.match(/(\d{2})[./-](\d{2})[./-](\d{2})\b/);
+    if (dm) { let y = dm[3].length===2 ? "20"+dm[3] : dm[3]; const dd=+dm[1], mm=+dm[2];
+      if (dd>=1&&dd<=31&&mm>=1&&mm<=12&&+y>=2015&&+y<=2100) r.date = y+"-"+pad(mm)+"-"+pad(dd); }
+    // Toplam (KDV dahil)
+    let total = 0;
+    for (let i=U.length-1;i>=0;i--){
+      const L = U[i];
+      if (/KDV|TOPKDV|ARA ?TOPLAM|İNDİRİM|INDIRIM|MATRAH|PARA ÜSTÜ|PARA USTU|NAKİT|NAKIT/.test(L) && !/KDV DAHİL|KDV DAHIL/.test(L)) continue;
+      if (/GENEL TOPLAM|ÖDENECEK|ODENECEK|TOPLAM TUTAR|\bTOPLAM\b|\bTOP\b|TUTAR/.test(L)) {
+        let a = amountsIn(L); if (!a.length && U[i+1]) a = amountsIn(U[i+1]);
+        if (a.length) { total = a[a.length-1]; if (/GENEL TOPLAM|ÖDENECEK|ODENECEK|TOPLAM TUTAR/.test(L)) break; if (/\bTOPLAM\b/.test(L)) break; }
+      }
+    }
+    if (!total) { const a = U.flatMap(amountsIn); if (a.length) total = Math.max(...a); }
+    if (total) r.total = total;
+    // KDV
+    let vat = 0;
+    const vLine = U.findIndex(L => /TOPKDV|TOP KDV|TOPLAM KDV|HESAPLANAN KDV|KDV TOPLAM/.test(L));
+    if (vLine >= 0) { let a = amountsIn(U[vLine]); if (!a.length && U[vLine+1]) a = amountsIn(U[vLine+1]); if (a.length) vat = a[a.length-1]; }
+    else { U.forEach(L => { if (/^\s*KDV\b|\bKDV\s*%?\s*\d{1,2}\b/.test(L) && !/DAHİL|MATRAH/.test(L)) { const a = amountsIn(L); if (a.length) vat += a[a.length-1]; } }); }
+    if (vat && (!total || vat < total)) r.vat = Math.round(vat*100)/100;
+    // Belge türü ve no
+    if (/E-?ARŞİV|E-?ARSIV|EARŞİV/.test(all)) r.doc = "earsiv";
+    else if (/E-?FATURA/.test(all)) r.doc = "efatura";
+    else if (/SERBEST MESLEK/.test(all)) r.doc = "smm";
+    else if (/FİŞ NO|FIS NO|\bZ NO\b|EKÜ|EKU NO|\bMF\b|ÖKC|OKC/.test(all)) r.doc = "fis";
+    else if (/FATURA/.test(all)) r.doc = "kagit";
+    const fn = all.match(/\b([A-ZÇĞİÖŞÜ]{3}20\d{2}\d{9})\b/) || all.match(/(?:FATURA|FİŞ|FIS|BELGE)\s*NO\s*[:.]?\s*([A-Z0-9-]{1,20})/);
+    if (fn) r.no = fn[1];
+    // İşyeri: üstteki ilk anlamlı satır
+    const skip = /HOŞ ?GELDİN|HOS ?GELDIN|TEŞEKKÜR|TESEKKUR|FİŞ|FIS|TARİH|TARIH|SAAT|VERGİ|VERGI|V\.D|VD\.|VKN|TCKN|MERSİS|TEL[:.\s]|ADRES|MAH\.|CAD\.|SOK\.|NO:|^\W*$|^\d/;
+    for (let i=0;i<Math.min(6,lines.length);i++){
+      const L = lines[i], LU = U[i];
+      if (skip.test(LU)) continue;
+      const letters = (L.match(/[A-Za-zÇĞİÖŞÜçğıöşü]/g)||[]).length;
+      if (letters >= 3 && letters/L.length > 0.6) { r.store = titleCase(L.replace(/[^\p{L}\p{N}&.\- ']/gu,"").trim()).slice(0,60); break; }
+    }
+    // Kategori
+    for (const [k, re] of CAT_RULES) { if (re.test(all)) { r.cat = k; break; } }
+    return r;
+  }
+  const titleCase = s => s.toLocaleLowerCase("tr").replace(/(^|\s|-|\.)(\p{L})/gu, (m,a,b)=>a+b.toLocaleUpperCase("tr"));
+
+  let ocrBusy = false;
+  async function runOcr(){
+    if (ocrBusy || !pendingBlob) return;
+    ocrBusy = true;
+    const msg=$("ocrMsg"), prog=$("prog"), fill=$("progFill"), save=$("saveBtn");
+    $("ocrBox").classList.add("show"); $("ocrRetry").classList.add("hidden");
+    msg.className="ocr-msg busy"; save.disabled=true; prog.classList.add("show"); fill.style.width="3%";
+    const firstTime = !ls.get("fd.ocrReady", false);
+    msg.textContent = firstTime ? "⏬ Fiş okuma motoru indiriliyor (sadece ilk seferde, ~15 MB)…" : "✨ Fiş okunuyor…";
+    progressCb = m => {
+      if (m.status === "recognizing text") { msg.textContent = "✨ Fiş okunuyor… %" + Math.round(m.progress*100); fill.style.width = (40 + m.progress*60) + "%"; }
+      else if (/loading/.test(m.status||"")) { fill.style.width = (5 + (m.progress||0)*35) + "%"; }
+    };
+    try {
+      const w = await getWorker();
+      ls.set("fd.ocrReady", true);
+      const canvas = await prepForOcr(pendingBlob);
+      const { data } = await w.recognize(canvas);
+      const r = parseReceipt(data.text || "");
+      let n = 0;
+      if (r.store && !$("fStore").value) { $("fStore").value = r.store; n++; }
+      if (r.date) { $("fDate").value = r.date; n++; }
+      if (r.total) { $("fTotal").value = numToInput(r.total); n++; }
+      if (r.vat) { $("fVat").value = numToInput(r.vat); n++; }
+      if (r.no) { $("fNo").value = r.no; n++; }
+      if (r.doc) { $("fDoc").value = r.doc; n++; }
+      if (r.cat) { $("fCat").value = r.cat; n++; }
+      updateElig();
+      msg.className = "ocr-msg";
+      msg.textContent = n >= 2 ? "✓ "+n+" alan dolduruldu. Kaydetmeden önce tutarı ve tarihi kontrol et." : "Fiş net okunamadı. Daha yakından ve düz çekip tekrar dene ya da elle gir.";
+    } catch(e) {
+      msg.className = "ocr-msg";
+      msg.textContent = navigator.onLine === false && firstTime
+        ? "İlk kullanımda okuma motorunu indirmek için internet gerekiyor. İnternete bağlanınca tekrar dene."
+        : "Fiş okunamadı. Tekrar dene ya da bilgileri elle gir.";
+    } finally {
+      fill.style.width = "100%"; setTimeout(()=>prog.classList.remove("show"), 400);
+      save.disabled = false; ocrBusy = false; progressCb = null;
+      $("ocrRetry").classList.remove("hidden");
+    }
+  }
+  $("ocrRetry").onclick = runOcr;
+
+  // ================= Form =================
+  let editing = null, pendingBlob = null;
+  const blobToImage = b => new Promise((res, rej) => { const u = URL.createObjectURL(b); const i = new Image(); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = e => { URL.revokeObjectURL(u); rej(e); }; i.src = u; });
+  async function compress(file, max, q){
+    const img = await blobToImage(file);
+    const s = Math.min(1, max/Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width=Math.round(img.naturalWidth*s); c.height=Math.round(img.naturalHeight*s);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(res=>c.toBlob(res,"image/jpeg",q));
+  }
+  let previewUrl = null;
+  function setPhoto(src){
+    const img=$("photoImg"), ph=$("photoPh");
+    if (src) { img.src=src; img.classList.remove("hidden"); ph.classList.add("hidden"); }
+    else { img.removeAttribute("src"); img.classList.add("hidden"); ph.classList.remove("hidden"); }
+  }
+  function openForm(r){
+    editing = r || null; pendingBlob = null;
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    $("formTitle").textContent = r ? "Kaydı düzenle" : "Yeni fiş / fatura";
+    $("fStore").value = r?.store || ""; $("fDate").value = r?.date || today();
+    $("fTotal").value = numToInput(r?.total); $("fVat").value = numToInput(r?.vat);
+    $("fCat").value = r?.cat || "market"; $("fDoc").value = r?.doc || "fis";
+    $("fWho").value = r?.who || "ben"; $("fNo").value = r?.no || ""; $("fWar").value = r?.warranty || ""; $("fNote").value = r?.note || "";
+    $("delBtn").classList.toggle("hidden", !r);
+    $("ocrBox").classList.remove("show"); $("ocrMsg").textContent = ""; $("ocrRetry").classList.add("hidden");
+    setPhoto("");
+    if (r && r.hasPhoto) photoUrl(r.id).then(u => { if (u && editing === r && !pendingBlob) setPhoto(u); });
+    updateElig();
+    $("sheetBg").classList.add("show");
+  }
+  function closeForm(){ $("sheetBg").classList.remove("show"); editing=null; pendingBlob=null; }
+  function updateElig(){
+    const r = {cat:$("fCat").value, doc:$("fDoc").value}, b=$("eligBox");
+    if (!isTaxCat(r)) { b.className="elig na"; return; }
+    if (isEligible(r)) { b.className="elig ok"; b.textContent="💰 Bu harcama vergi indirimine uygun görünüyor (belge senin, eşinin veya çocuğunun adına olmalı)."; }
+    else { b.className="elig no"; b.textContent="⚠️ Yazar kasa fişi vergi indiriminde kabul edilmez. Mümkünse işyerinden adına e-Arşiv fatura iste."; }
+  }
+  async function onPhoto(e){
+    const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { pendingBlob = await compress(f, 1800, 0.85); }
+    catch(err){ pendingBlob = null; toast("Bu görsel açılamadı, başka bir fotoğraf dene."); return; }
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(pendingBlob); setPhoto(previewUrl);
+    runOcr();
+  }
+  $("file").addEventListener("change", onPhoto);
+  $("fileGal").addEventListener("change", onPhoto);
+  $("galBtn").onclick = () => $("fileGal").click();
+  ["fCat","fDoc"].forEach(id => $(id).addEventListener("change", updateElig));
+
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const total = parseNum($("fTotal").value);
+    if (!$("fStore").value.trim()) { toast("İşyeri adını yaz."); $("fStore").focus(); return; }
+    if (!total) { toast("Tutarı gir."); $("fTotal").focus(); return; }
+    const btn=$("saveBtn"); btn.disabled=true; btn.textContent="Kaydediliyor…";
+    const wasEdit = !!editing;
+    const r = Object.assign({}, editing || {id:newId(), createdAt:Date.now()}, {
+      store: $("fStore").value.trim(), date: $("fDate").value || today(), total, vat: parseNum($("fVat").value),
+      cat: $("fCat").value, doc: $("fDoc").value, who: $("fWho").value, no: $("fNo").value.trim(),
+      warranty: $("fWar").value || "", note: $("fNote").value.trim(), updatedAt: Date.now()
+    });
+    try {
+      if (pendingBlob) { const small = await compress(pendingBlob, 1400, 0.75); await DB.putPhoto(r.id, small); dropPhotoUrl(r.id); r.hasPhoto = true; }
+      await DB.put(r);
+      const i = state.receipts.findIndex(x=>x.id===r.id); if (i>=0) state.receipts[i]=r; else state.receipts.push(r);
+      const y = parseInt(r.date.slice(0,4)); if (y) state.year = y;
+      closeForm(); render(); toast(wasEdit ? "Güncellendi ✓" : "Kaydedildi ✓");
+      checkAlerts();
+    } catch(err) {
+      toast(err && err.name === "QuotaExceededError" ? "Telefonda yer kalmadı. Yedek alıp eski kayıtları sil." : "Kaydedilemedi, tekrar dene.");
+    } finally { btn.disabled=false; btn.textContent="Kaydet"; }
+  });
+
+  function confirmBox(text, yesLabel){
+    return new Promise(res => {
+      $("confirmText").textContent = text; $("cYes").textContent = yesLabel || "Evet";
+      $("confirmBg").classList.add("show");
+      $("cYes").onclick = () => { $("confirmBg").classList.remove("show"); res(true); };
+      $("cNo").onclick = () => { $("confirmBg").classList.remove("show"); res(false); };
+    });
+  }
+  $("cancelBtn").onclick = closeForm;
+  $("sheetBg").addEventListener("click", e => { if (e.target === $("sheetBg")) closeForm(); });
+  $("delBtn").onclick = async () => {
+    if (!editing) return; const r = editing;
+    if (!await confirmBox(`"${r.store}" kaydı (${fmt(r.total)}) ve fotoğrafı silinsin mi? Bu geri alınamaz.`, "Sil")) return;
+    try { await DB.del(r.id); dropPhotoUrl(r.id); state.receipts = state.receipts.filter(x=>x.id!==r.id); closeForm(); render(); toast("Silindi"); }
+    catch(e){ toast("Silinemedi, tekrar dene."); }
+  };
+
+  // ================= Dosya kaydetme =================
+  async function saveFile(blob, name){
+    try {
+      const file = new File([blob], name, {type: blob.type});
+      if (navigator.canShare && navigator.canShare({files:[file]}) && /android|iphone|ipad/i.test(navigator.userAgent)) {
+        await navigator.share({files:[file], title:name}); return true;
+      }
+    } catch(e){ if (e && e.name === "AbortError") return false; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    return true;
+  }
+
+  // CSV
+  $("csvBtn").onclick = async () => {
+    const items = yearItems().sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+    if (!items.length) { toast(state.year+" yılında kayıt yok."); return; }
+    const esc = v => { v = v==null ? "" : String(v); return /[;"\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+    const num = n => (n||0).toFixed(2).replace(".",",");
+    const who = {ben:"Kendim",es:"Eşim",cocuk:"Çocuğum",diger:"Diğer"};
+    const head = ["Tarih","İşyeri","Kategori","Belge türü","Belge no","Kimin için","Tutar (KDV dahil)","KDV","Vergiye uygun","Garanti bitişi","Not"];
+    const rows = items.map(r => [r.date, r.store, catOf(r.cat).n, docOf(r.doc).n, r.no, who[r.who]||"", num(r.total), num(r.vat), isEligible(r)?"Evet":"Hayır", r.warranty, r.note].map(esc).join(";"));
+    const csv = "﻿" + [head.join(";")].concat(rows).join("\r\n");
+    await saveFile(new Blob([csv], {type:"text/csv;charset=utf-8"}), "fis-fatura-"+state.year+".csv");
+  };
+
+  // Yedek
+  const blobToDataUrl = b => new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
+  $("backupBtn").onclick = async () => {
+    const btn = $("backupBtn"); btn.disabled = true; btn.textContent = "Hazırlanıyor…";
+    try {
+      const photos = {};
+      for (const r of state.receipts) if (r.hasPhoto) { const b = await DB.getPhoto(r.id); if (b) photos[r.id] = await blobToDataUrl(b); }
+      const data = { app:"fis-fatura-defteri", version:1, exportedAt:new Date().toISOString(), settings:state.settings, receipts:state.receipts, photos };
+      const ok = await saveFile(new Blob([JSON.stringify(data)], {type:"application/json"}), "fis-defteri-yedek-"+today()+".json");
+      if (ok) { ls.set("fd.lastBackup", Date.now()); renderBackup(); }
+    } catch(e){ toast("Yedek alınamadı."); }
+    finally { btn.disabled = false; btn.textContent = "Yedek al (fotoğraflar dahil)"; }
+  };
+  $("restoreBtn").onclick = () => $("restoreFile").click();
+  $("restoreFile").addEventListener("change", async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    let data;
+    try { data = JSON.parse(await f.text()); } catch(err){ toast("Bu dosya okunamadı."); return; }
+    if (!data || data.app !== "fis-fatura-defteri" || !Array.isArray(data.receipts)) { toast("Bu bir Fiş Defteri yedeği değil."); return; }
+    if (!await confirmBox(data.receipts.length+" kayıt yedekten geri yüklensin mi? Aynı kayıtlar güncellenir, mevcut diğer kayıtların silinmez.", "Geri yükle")) return;
+    try {
+      for (const r of data.receipts) {
+        if (!r || !r.id) continue;
+        const ph = data.photos && data.photos[r.id];
+        if (ph) { const b = await (await fetch(ph)).blob(); await DB.putPhoto(r.id, b); dropPhotoUrl(r.id); }
+        await DB.put(r);
+      }
+      if (data.settings) { state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings); saveSettings(); fillSettings(); }
+      await load(); toast("Yedek geri yüklendi ✓");
+    } catch(err){ toast("Geri yükleme yarıda kaldı. Tekrar dene."); }
+  });
+  function renderBackup(){
+    const t = ls.get("fd.lastBackup", 0);
+    $("lastBackup").textContent = t ? "Son yedek: " + new Date(t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"}) : "Henüz yedek almadın.";
+  }
+
+  // ================= Ayarlar ve gezinme =================
+  function fillSettings(){
+    const s = state.settings;
+    $("inc").value = s.income ? numToInput(s.income) : ""; $("rate").value = s.rate || "27";
+    $("budget").value = s.budget ? numToInput(s.budget) : "";
+    ["aBudget","aMonth","aCat","aWar"].forEach(k => $(k).checked = !!s[k]);
+  }
+  $("inc").addEventListener("input", () => { state.settings.income = parseNum($("inc").value); saveSettings(); renderCalc(yearItems()); });
+  $("rate").addEventListener("change", () => { state.settings.rate = $("rate").value; saveSettings(); renderCalc(yearItems()); });
+  $("budget").addEventListener("change", () => { state.settings.budget = parseNum($("budget").value); saveSettings(); render(); checkAlerts(); });
+  ["aBudget","aMonth","aCat","aWar"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); }));
+
+  let lastTab = "list";
+  function show(v){
+    document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on", x.id==="v-"+v));
+    document.querySelectorAll("nav.tabs button[data-v]").forEach(x=>x.classList.toggle("on", x.dataset.v===v));
+    window.scrollTo({top:0});
+  }
+  document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { lastTab = b.dataset.v; show(b.dataset.v); }));
+  $("setBtn").onclick = () => { renderPerm(); renderBackup(); show("settings"); };
+  $("backBtn").onclick = () => show(lastTab);
+  $("addBtn").onclick = () => { openForm(null); $("file").click(); };
+  $("yearSel").onchange = e => { state.year = parseInt(e.target.value); render(); };
+  $("q").addEventListener("input", e => { state.q = e.target.value; renderList(yearItems()); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { renderMonthCard(); checkAlerts(); } });
+
+  // ================= Başlat =================
+  $("ver").textContent = APP_VERSION;
+  $("fCat").innerHTML = ""; CATS.forEach(c=>{ const o=el("option",null,c.e+"  "+c.n); o.value=c.k; $("fCat").append(o); });
+  $("fDoc").innerHTML = ""; DOCS.forEach(d=>{ const o=el("option",null,d.n); o.value=d.k; $("fDoc").append(o); });
+  fillSettings();
+  load().then(checkAlerts);
+  // Test için dışarı aç
+  window.__fd = { parseReceipt };
+})();
+</script>
+</body>
+</html>
