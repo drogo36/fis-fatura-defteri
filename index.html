@@ -33,7 +33,10 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{overflow-x:hidden;overscroll-behavior-y:none}
   button,input,select,textarea{font:inherit;color:inherit}
+  input,select,textarea{font-size:16px!important}
   .wrap{max-width:720px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
   header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 2px 18px}
   header.top h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0}
@@ -134,7 +137,7 @@
   .setrow .tx span{color:var(--muted);font-size:12.5px}
   .switch{position:relative;width:50px;height:30px;flex:0 0 auto}
   .switch input{opacity:0;width:0;height:0}
-  .switch span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;cursor:pointer}
+  .switch span{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--line);border-radius:99px;transition:.2s;cursor:pointer}
   .switch span:before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
   .switch input:checked + span{background:var(--accent)}
   .switch input:checked + span:before{transform:translateX(20px)}
@@ -149,7 +152,7 @@
   nav.tabs button.on{color:var(--accent)}
   nav.tabs .add{width:56px;height:56px;border-radius:18px;background:var(--accent);color:var(--accent-ink);font-size:30px;font-weight:400;display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 18px rgba(15,118,110,.35);padding:0}
 
-  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .sheet-bg{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.42);z-index:40;display:none;align-items:flex-end;justify-content:center}
   .sheet-bg.show{display:flex}
   .sheet{background:var(--card);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));animation:up .22s ease}
   @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
@@ -232,7 +235,7 @@
   .chooser button b{display:block;font-size:15.5px}
   .chooser button small{color:var(--muted);font-size:12.5px}
   .tag.inst{background:var(--accent-soft);color:var(--accent)}
-  .lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  .lock{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
   .lock.show{display:flex}
   .lock h2{margin:10px 0 6px;font-size:20px}
   .lock p{color:var(--muted);margin:0 0 22px;font-size:14px;text-align:center}
@@ -246,14 +249,55 @@
   .pad button.blank{background:none;box-shadow:none}
   .empty-s{color:var(--muted);font-size:13.5px;padding:6px 0}
   .f .hint{font-size:11.5px;color:var(--muted)}
+  /* ---- v2.2: üst çubuk, geri tuşu, her ekrana uyum ---- */
+  .wrap{padding-top:0}
+  header.top{position:sticky;top:0;z-index:15;margin:0 -16px 16px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);
+    background:color-mix(in srgb, var(--bg) 88%, transparent);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px)}
+  header.top.scrolled{box-shadow:0 1px 0 var(--line)}
+  .hleft{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+  .htxt{min-width:0}
+  header.top h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header.top .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hright{flex:0 0 auto}
+  .backbtn{flex:0 0 auto;width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:28px;line-height:1;
+    display:grid;place-items:center;padding:0 0 3px;cursor:pointer;color:var(--ink)}
+  .sheet{max-height:92vh;max-height:92dvh;padding-left:calc(18px + env(safe-area-inset-left));padding-right:calc(18px + env(safe-area-inset-right))}
+  .wrap{padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right))}
+  .f input[type=date],.f input[type=month]{min-height:46px;display:block}
+  .lock{padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom))}
+  img{max-width:100%}
+  @media (max-width:380px){
+    header.top h1{font-size:18px} header.top .sub{font-size:12px}
+    select.pill{padding:8px 26px 8px 11px;font-size:14px!important}
+    .stat .v{font-size:18px} .stat.hero .v{font-size:26px}
+    .hero-row{gap:6px} .hero-row div{padding:7px 8px} .hero-row b{font-size:13px}
+    .kpi b{font-size:16px}
+    nav.tabs button{padding:6px 4px;font-size:11px}
+    .row{padding:12px 12px;gap:10px}
+    .card{padding:16px}
+  }
+  .months .m,.dual .m{min-width:0}
+  .months .ml,.dual .ml{max-width:100%;overflow:hidden;text-overflow:clip;white-space:nowrap}
+  @media (max-width:400px){ .months,.dual{gap:2px} .months .ml,.dual .ml{font-size:9px;letter-spacing:-.2px} .dual .c{width:44%} }
+  @media (max-width:350px){
+    .grid{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr}
+    .hero-row b{font-size:12px}
+    header.top .sub{display:none}
+  }
+  @media (max-height:640px){ .pad{grid-template-columns:repeat(3,62px);gap:12px} .pad button{width:62px;height:62px;font-size:23px} .dots{margin-bottom:18px} }
+  @media (min-width:900px){ .sheet{border-radius:24px;margin-bottom:24px} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div>
-      <h1>Fiş & Fatura Defteri</h1>
-      <div class="sub">📱 Kayıtların sadece bu telefonda</div>
+  <header class="top" id="topBar">
+    <div class="hleft">
+      <button class="backbtn hidden" id="topBack" aria-label="Geri" type="button">‹</button>
+      <div class="htxt">
+        <h1 id="topTitle">Fiş & Fatura Defteri</h1>
+        <div class="sub" id="topSub">📱 Kayıtların sadece bu telefonda</div>
+      </div>
     </div>
     <div class="hright">
       <select class="pill" id="yearSel" aria-label="Yıl"></select>
@@ -439,7 +483,6 @@
 
   <!-- AYARLAR -->
   <section class="view" id="v-settings">
-    <div class="backbar"><button class="linkbtn" id="backBtn">‹ Geri</button></div>
 
     <div class="card">
       <h2>🤖 Yapay zeka ile fiş okuma</h2>
@@ -616,7 +659,7 @@
 <script>
 (() => {
   "use strict";
-  const APP_VERSION = "2.1.0";
+  const APP_VERSION = "2.2.0";
   const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 
   // ================= Sabitler =================
@@ -943,7 +986,7 @@
     $("pStart").value = pRule();
     $("bIn").textContent = fmt0(inc); $("bOut").textContent = fmt0(out);
     $("bLeft").textContent = (left<0?"-":"") + fmt0(Math.abs(left)); $("bLeft").className = left < 0 ? "neg" : "pos";
-    $("bRate").textContent = inc > 0 ? "%" + Math.round(left/inc*100) : "—";
+    $("bRate").textContent = inc > 0 ? (left < 0 ? "-%" : "%") + Math.abs(Math.round(left/inc*100)) : "—";
     // gelir listesi
     const il = $("incomeList"); il.innerHTML = "";
     const incs = recs("income").filter(x=>inP(x.date, P)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1027,7 +1070,7 @@
       const b = el("div","c out"); b.style.height = Math.max(1, outs[i]/mx*100) + "%"; b.title = "Gider " + fmt(outs[i]);
       p.append(a,b); m.append(p, el("div","ml", MONTHS[i].slice(0,3))); dOut.append(m); }
     const ti = sumBy(ins), to = sumBy(outs);
-    $("dualLead").textContent = y + " · gelir " + fmt0(ti) + " · gider " + fmt0(to) + (ti ? " · tasarruf %" + Math.round((ti-to)/ti*100) : "");
+    $("dualLead").textContent = y + " · gelir " + fmt0(ti) + " · gider " + fmt0(to) + (ti ? (ti >= to ? " · tasarruf %" + Math.round((ti-to)/ti*100) : " · açık %" + Math.round((to-ti)/ti*100)) : "");
     // bu ay
     const fc = forecast();
     $("rProjL").textContent = isCal() ? "Ay sonu tahmini" : "Dönem sonu tahmini"; $("rDaily").textContent = fmt0(fc.daily); $("rProj").textContent = fmt0(fc.proj); $("rFixed").textContent = fmt0(fc.fixed);
@@ -1156,7 +1199,7 @@
       for (const u of upcoming(3)) {
         const isInc = u.rc.type === "income";
         if (u.d < 0) { if (!isInc) await fire("rec:"+u.rc.id+":"+u.ym+":late", "⏰ Ödeme günü geçti", u.rc.name+" ("+fmt0(u.rc.amount)+") "+Math.abs(u.d)+" gün gecikti.", "red"); }
-        else await fire("rec:"+u.rc.id+":"+u.ym, isInc ? "💰 "+u.rc.name+" "+dueText(u.d) : "📅 "+u.rc.name+" ödemesi "+dueText(u.d), fmt0(u.rc.amount)+" · "+fmtDate(u.due));
+        else await fire("rec:"+u.rc.id+":"+u.ym, (isInc ? "💰 " : "📅 ")+u.rc.name+" · "+dueText(u.d), fmt0(u.rc.amount)+" · "+fmtDate(u.due));
       }
       for (const x of recs("debt")) { if (x.closed || !x.due) continue; const d = dayDiff(x.due, today());
         if (d <= 3) await fire("debt:"+x.id+":"+x.due, x.dir==="alacak" ? "🤝 "+x.person+" sana borcunu ödemeli" : "🤝 "+x.person+"'e borcunu ödeme günü", fmt0(x.amount)+" · vade "+fmtDate(x.due)+" ("+dueText(d)+")"); }
@@ -1805,15 +1848,44 @@ Kurallar:
   $("rate").addEventListener("change", () => { state.settings.rate = $("rate").value; saveSettings(); renderCalc(yearItems()); });
   ["aBudget","aMonth","aCat","aRec","aWar"].forEach(k => $(k).addEventListener("change", () => { state.settings[k] = $(k).checked; saveSettings(); }));
 
-  let lastTab = "list";
-  function show(v){
+  // ---- Gezinme: üstteki geri tuşu + telefonun kendi geri hareketi ----
+  const VIEWS = { list:["Fiş & Fatura Defteri","📱 Kayıtların sadece bu telefonda"], budget:["Bütçe","Gelir, bütçe, ödemeler, hedefler"],
+    report:["Raporlar","Harcamalarının özeti"], tax:["Vergi","Eğitim ve sağlık indirimi"], settings:["Ayarlar","Yapay zeka, bildirim, kilit, yedek"] };
+  let curView = "list", ignorePop = 0, sheetEntry = false;
+  function show(v, push){
+    if (!VIEWS[v]) v = "list";
+    if (v === "settings") { renderPerm(); renderBackup(); renderGem(); renderPin(); }
     document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on", x.id==="v-"+v));
     document.querySelectorAll("nav.tabs button[data-v]").forEach(x=>x.classList.toggle("on", x.dataset.v===v));
-    window.scrollTo({top:0});
+    $("topTitle").textContent = v === "list" && window.innerWidth <= 380 ? "Fiş Defteri" : VIEWS[v][0]; $("topSub").textContent = VIEWS[v][1];
+    $("topBack").classList.toggle("hidden", v === "list");
+    $("yearSel").classList.toggle("hidden", v === "budget" || v === "settings");
+    $("setBtn").classList.toggle("hidden", v === "settings");
+    if (push !== false && v !== curView) { try { history.pushState({v}, "", v === "list" ? location.pathname + location.search : "#" + v); } catch(e){} }
+    curView = v; window.scrollTo(0, 0);
   }
-  document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { lastTab = b.dataset.v; show(b.dataset.v); }));
-  $("setBtn").onclick = () => { renderPerm(); renderBackup(); renderGem(); renderPin(); show("settings"); };
-  $("backBtn").onclick = () => show(lastTab);
+  document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => show(b.dataset.v)));
+  $("setBtn").onclick = () => show("settings");
+  $("topBack").onclick = () => { if (history.state && history.state.v && history.state.v !== "list" && history.length > 1) history.back(); else show("list"); };
+  // Açık pencereler (form, seçici, onay) telefonun geri hareketiyle kapanır
+  const SHEET_IDS = ["confirmBg","genBg","sheetBg","chooserBg"];
+  const openSheets = () => SHEET_IDS.filter(id => $(id).classList.contains("show"));
+  const closeSheet = id => { if (id === "confirmBg") $("cNo").click(); else if (id === "genBg") closeGen(); else if (id === "sheetBg") closeForm(); else closeChooser(); };
+  const sheetObs = new MutationObserver(() => {
+    if (openSheets().length) { if (!sheetEntry) { sheetEntry = true; try { history.pushState({v:curView, sheet:1}, ""); } catch(e){} } }
+    else setTimeout(() => { if (sheetEntry && !openSheets().length) { sheetEntry = false; ignorePop++; history.back(); } }, 0);
+  });
+  SHEET_IDS.forEach(id => sheetObs.observe($(id), {attributes:true, attributeFilter:["class"]}));
+  window.addEventListener("popstate", e => {
+    if (ignorePop) { ignorePop--; return; }
+    if (sheetEntry) { sheetEntry = false; const top = openSheets()[0]; if (top) closeSheet(top);
+      if (openSheets().length) { sheetEntry = true; try { history.pushState({v:curView, sheet:1}, ""); } catch(_){} } return; }
+    show((e.state && e.state.v) || (location.hash || "#list").slice(1), false);
+  });
+  window.addEventListener("scroll", () => $("topBar").classList.toggle("scrolled", window.scrollY > 4), {passive:true});
+  const startHash = (location.hash || "").slice(1);
+  try { history.replaceState({v:"list"}, "", location.pathname + location.search); } catch(e){}
+  if (VIEWS[startHash] && startHash !== "list") show(startHash); else show("list", false);
   $("yearSel").onchange = e => { state.year = parseInt(e.target.value); render(); };
   $("q").addEventListener("input", e => { state.q = e.target.value; renderList(yearItems()); });
   document.addEventListener("visibilitychange", () => {
