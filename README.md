@@ -6,7 +6,8 @@ Fiş ve faturalarını telefonunda takip etmeni sağlayan ücretsiz bir uygulama
 
 ## Neler yapar?
 
-- **📷 Fotoğrafla otomatik okuma:** Fişin fotoğrafını çekersin; işyeri, tarih, tutar, KDV, belge no, belge türü ve kategori kendiliğinden dolar. Okuma telefonunun içinde yapılır, fişlerin hiçbir sunucuya gönderilmez.
+- **🤖 Yapay zeka ile fiş okuma (Gemini):** Fişin fotoğrafını çekersin; işyeri, tarih, tutar, KDV, belge no, belge türü ve kategori kendiliğinden dolar. ⚙️ Ayarlar'a ücretsiz Gemini anahtarını bir kez yapıştırman yeterli ([anahtar al](https://aistudio.google.com/apikey)). Anahtar sadece telefonunda saklanır.
+- **📷 İnternetsiz yedek okuyucu:** Anahtar yoksa ya da internet yoksa fiş, telefonun içindeki okuyucuyla (Tesseract) okunur.
 - **🔔 Harcama bildirimleri:**
   - Aylık bütçenin %80'ine gelince ve bütçeyi aşınca
   - Geçen ayın aynı dönemine göre %25'ten fazla harcayınca

@@ -296,6 +296,25 @@
   <section class="view" id="v-settings">
     <div class="backbar"><button class="linkbtn" id="backBtn">‹ Geri</button></div>
 
+    <div class="card">
+      <h2>🤖 Yapay zeka ile fiş okuma</h2>
+      <p class="lead">Google'ın Gemini yapay zekası fişi çok daha doğru okur: buruşuk, soluk ve e-Arşiv faturalar dahil. Ücretsiz bir anahtar alıp buraya bir kez yapıştırman yeterli.</p>
+      <div class="perm" id="gemState"></div>
+      <div class="f"><label for="gemKey">Gemini API anahtarı</label><input id="gemKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <button class="btn block" id="gemSave">Kaydet ve dene</button>
+      <button class="btn danger block hidden" id="gemDel">Anahtarı sil</button>
+      <div class="info">
+        <h3>Ücretsiz anahtar nasıl alınır? (2 dakika)</h3>
+        <ol>
+          <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> adresini aç, Google hesabınla giriş yap.</li>
+          <li>Şartları kabul et, <b>Create API key</b> (API anahtarı oluştur) butonuna bas.</li>
+          <li>Çıkan <b>AIza…</b> ile başlayan anahtarın yanındaki <b>kopyala</b> simgesine bas.</li>
+          <li>Buraya geri dön, kutuya yapıştır ve <b>Kaydet ve dene</b>'ye bas.</li>
+        </ol>
+      </div>
+      <div class="note">Anahtar sadece bu telefonda saklanır. Fiş fotoğrafı okunmak için doğrudan Google'a gönderilir; ücretsiz kullanımda Google bu verileri ürünlerini geliştirmek için kullanabilir. İnternet yoksa ya da anahtar yoksa fiş, telefondaki basit okuyucuyla okunur.</div>
+    </div>
+
     <div class="card" id="installCard">
       <h2>📲 Telefona uygulama olarak kur</h2>
       <p class="lead">Ana ekranına simge olarak eklenir, internetsiz de açılır. Bildirimler için bu adım gerekli.</p>
@@ -334,7 +353,7 @@
 
     <div class="card">
       <h2>ℹ️ Hakkında</h2>
-      <p class="lead" style="margin:0">Fiş & Fatura Defteri · sürüm <span id="ver"></span><br>Üyelik gerektirmez, ücretsizdir. Fiş okuma telefonunun içinde yapılır; fişlerin hiçbir sunucuya gönderilmez.</p>
+      <p class="lead" style="margin:0">Fiş & Fatura Defteri · sürüm <span id="ver"></span><br>Üyelik gerektirmez, ücretsizdir. Yapay zeka kapalıyken fiş okuma telefonunun içinde yapılır.</p>
     </div>
   </section>
 </div>
@@ -398,7 +417,7 @@
 <script>
 (() => {
   "use strict";
-  const APP_VERSION = "1.0.0";
+  const APP_VERSION = "1.1.0";
   const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 
   // ================= Sabitler =================
@@ -829,6 +848,90 @@
   }
   const titleCase = s => s.toLocaleLowerCase("tr").replace(/(^|\s|-|\.)(\p{L})/gu, (m,a,b)=>a+b.toLocaleUpperCase("tr"));
 
+  // ================= Yapay zeka ile okuma (Gemini) =================
+  const GEMINI_MODELS = ["gemini-3-flash-preview","gemini-3.1-flash-lite","gemini-2.5-flash-lite","gemini-3.5-flash-lite","gemini-3.8-flash","gemini-2.5-flash"];
+  const getGemKey = () => (ls.get("fd.gemKey", "") || "").trim();
+  async function geminiCall(parts, key, signal){
+    const pref = ls.get("fd.gemModel", null);
+    const order = pref && GEMINI_MODELS.includes(pref) ? [pref].concat(GEMINI_MODELS.filter(m=>m!==pref)) : GEMINI_MODELS;
+    let lastErr = null;
+    for (const m of order) {
+      let res;
+      try {
+        res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent", {
+          method:"POST", signal,
+          headers:{ "Content-Type":"application/json", "x-goog-api-key": key },
+          body: JSON.stringify({ contents:[{ role:"user", parts }], generationConfig:{ temperature:0, responseMimeType:"application/json" } })
+        });
+      } catch(e) { throw { code: e && e.name === "AbortError" ? "timeout" : "network" }; }
+      let body = {}; try { body = await res.json(); } catch(_) {}
+      if (res.ok) {
+        const text = (body.candidates && body.candidates[0] && body.candidates[0].content && body.candidates[0].content.parts || []).map(p=>p.text||"").join("");
+        if (text) { ls.set("fd.gemModel", m); return { text, model:m }; }
+        lastErr = { code:"empty" }; continue;
+      }
+      const emsg = (body.error && body.error.message) || "";
+      if (/API key not valid|API_KEY_INVALID|API key expired/i.test(emsg)) throw { code:"badkey", msg:emsg };
+      lastErr = { code: res.status === 429 ? "quota" : "model", status: res.status, msg: emsg };
+      // 404 (model yok), 400/403 (bu modele izin yok), 429 (kota), 5xx → sıradaki modeli dene
+    }
+    throw lastErr || { code:"other" };
+  }
+  const extractJson = t => {
+    t = String(t||"").replace(/```(?:json)?/gi,"").trim();
+    try { return JSON.parse(t); } catch(_) {}
+    const a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b+1)); } catch(_) {} }
+    return null;
+  };
+  const GEM_PROMPT = `Ekteki görsel Türkiye'den bir alışveriş fişi, fatura ya da makbuz. Bilgileri dikkatle oku ve SADECE şu alanları içeren tek bir JSON nesnesi döndür:
+{"isyeri": string, "tarih": "YYYY-MM-DD", "toplam": number, "kdv": number, "belgeNo": string, "belgeTuru": string, "kategori": string}
+Kurallar:
+- "isyeri": fişin en üstündeki işletme adı, kısa ve okunaklı (örn. "Migros", "Deva Eczanesi"). Adres, şube, vergi dairesi yazma.
+- "toplam": ödenen KDV DAHİL genel toplam (TOPLAM / GENEL TOPLAM / ÖDENECEK TUTAR). Nakit, para üstü, ara toplam DEĞİL.
+- "kdv": toplam KDV tutarı (TOPKDV / HESAPLANAN KDV). Birden fazla KDV oranı varsa topla. Yoksa 0.
+- Sayılar JSON sayısı olsun, nokta ondalıklı (örn. 1234.50). Türk biçimindeki 1.234,50 = 1234.50.
+- "belgeTuru" şunlardan biri: "fis" (yazar kasa/ÖKC fişi), "earsiv" (e-Arşiv fatura), "efatura" (e-Fatura), "kagit" (matbu fatura), "smm" (serbest meslek makbuzu), "diger".
+- "kategori" şunlardan biri: ${CATS.map(c=>'"'+c.k+'" ('+c.n+')').join(", ")}. Eczane, hastane, doktor, optik, diş → "saglik". Okul, kurs, kırtasiye, kitap → "egitim". Benzinlik → "akaryakit". Elektrik/su/doğalgaz/internet/telefon faturası → "faturalar".
+- "belgeNo": fiş no veya fatura no; yoksa "".
+- Okunamayan alan için "" ya da 0 kullan. Tahmin uydurma.`;
+  async function readWithGemini(blob){
+    const key = getGemKey(); if (!key) throw { code:"nokey" };
+    const small = await compress(blob, 1600, 0.85);
+    const b64 = (await blobToDataUrl(small)).split(",")[1];
+    const ctl = new AbortController(); const to = setTimeout(()=>ctl.abort(), 60000);
+    try {
+      const { text } = await geminiCall([{ text: GEM_PROMPT }, { inline_data: { mime_type:"image/jpeg", data: b64 } }], key, ctl.signal);
+      const j = extractJson(text); if (!j) throw { code:"parse" };
+      const r = {};
+      if (j.isyeri) r.store = String(j.isyeri).trim().slice(0,60);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(j.tarih||"")) r.date = j.tarih;
+      const t = parseNum(j.toplam); if (t) r.total = t;
+      const v = parseNum(j.kdv); if (v && (!t || v < t)) r.vat = v;
+      if (j.belgeNo) r.no = String(j.belgeNo).trim().slice(0,40);
+      if (DOCS.some(d=>d.k===j.belgeTuru)) r.doc = j.belgeTuru;
+      if (CATS.some(c=>c.k===j.kategori)) r.cat = j.kategori;
+      return r;
+    } finally { clearTimeout(to); }
+  }
+  function applyParsed(r, overwriteStore){
+    let n = 0;
+    if (r.store && (overwriteStore || !$("fStore").value)) { $("fStore").value = r.store; n++; }
+    if (r.date) { $("fDate").value = r.date; n++; }
+    if (r.total) { $("fTotal").value = numToInput(r.total); n++; }
+    if (r.vat) { $("fVat").value = numToInput(r.vat); n++; }
+    if (r.no) { $("fNo").value = r.no; n++; }
+    if (r.doc) { $("fDoc").value = r.doc; n++; }
+    if (r.cat) { $("fCat").value = r.cat; n++; }
+    updateElig(); return n;
+  }
+  const GEM_ERR = {
+    badkey: "Gemini anahtarın geçersiz. ⚙️ Ayarlar'dan anahtarı kontrol et.",
+    quota: "Gemini'nin günlük ücretsiz kullanım sınırı doldu.",
+    network: "İnternet yok, Gemini'ye ulaşılamadı.",
+    timeout: "Gemini çok geç yanıt verdi."
+  };
+
   let ocrBusy = false;
   async function runOcr(){
     if (ocrBusy || !pendingBlob) return;
@@ -836,34 +939,46 @@
     const msg=$("ocrMsg"), prog=$("prog"), fill=$("progFill"), save=$("saveBtn");
     $("ocrBox").classList.add("show"); $("ocrRetry").classList.add("hidden");
     msg.className="ocr-msg busy"; save.disabled=true; prog.classList.add("show"); fill.style.width="3%";
-    const firstTime = !ls.get("fd.ocrReady", false);
-    msg.textContent = firstTime ? "⏬ Fiş okuma motoru indiriliyor (sadece ilk seferde, ~15 MB)…" : "✨ Fiş okunuyor…";
-    progressCb = m => {
-      if (m.status === "recognizing text") { msg.textContent = "✨ Fiş okunuyor… %" + Math.round(m.progress*100); fill.style.width = (40 + m.progress*60) + "%"; }
-      else if (/loading/.test(m.status||"")) { fill.style.width = (5 + (m.progress||0)*35) + "%"; }
-    };
+    let note = "";
     try {
-      const w = await getWorker();
-      ls.set("fd.ocrReady", true);
-      const canvas = await prepForOcr(pendingBlob);
-      const { data } = await w.recognize(canvas);
-      const r = parseReceipt(data.text || "");
-      let n = 0;
-      if (r.store && !$("fStore").value) { $("fStore").value = r.store; n++; }
-      if (r.date) { $("fDate").value = r.date; n++; }
-      if (r.total) { $("fTotal").value = numToInput(r.total); n++; }
-      if (r.vat) { $("fVat").value = numToInput(r.vat); n++; }
-      if (r.no) { $("fNo").value = r.no; n++; }
-      if (r.doc) { $("fDoc").value = r.doc; n++; }
-      if (r.cat) { $("fCat").value = r.cat; n++; }
-      updateElig();
-      msg.className = "ocr-msg";
-      msg.textContent = n >= 2 ? "✓ "+n+" alan dolduruldu. Kaydetmeden önce tutarı ve tarihi kontrol et." : "Fiş net okunamadı. Daha yakından ve düz çekip tekrar dene ya da elle gir.";
-    } catch(e) {
-      msg.className = "ocr-msg";
-      msg.textContent = navigator.onLine === false && firstTime
-        ? "İlk kullanımda okuma motorunu indirmek için internet gerekiyor. İnternete bağlanınca tekrar dene."
-        : "Fiş okunamadı. Tekrar dene ya da bilgileri elle gir.";
+      // 1) Yapay zeka (Gemini) — anahtar varsa
+      if (getGemKey() && navigator.onLine !== false) {
+        msg.textContent = "🤖 Yapay zeka fişi okuyor…";
+        let p = 5; const tick = setInterval(()=>{ p = Math.min(90, p + 4); fill.style.width = p + "%"; }, 400);
+        try {
+          const r = await readWithGemini(pendingBlob);
+          clearInterval(tick);
+          const n = applyParsed(r, true);
+          if (n >= 2) { msg.className = "ocr-msg"; msg.textContent = "✓ Yapay zeka "+n+" alanı doldurdu. Kaydetmeden önce bir göz at."; return; }
+          note = "Yapay zeka fişi net okuyamadı, telefondaki okuyucuyla deniyorum…";
+        } catch(e) {
+          clearInterval(tick);
+          note = (GEM_ERR[e && e.code] || "Yapay zeka şu an yanıt vermedi.") + " Telefondaki okuyucuyla deniyorum…";
+        }
+        msg.textContent = note; fill.style.width = "5%";
+      }
+      // 2) Telefondaki okuyucu (Tesseract) — yedek
+      const firstTime = !ls.get("fd.ocrReady", false);
+      if (!note) msg.textContent = firstTime ? "⏬ Fiş okuma motoru indiriliyor (sadece ilk seferde, ~15 MB)…" : "✨ Fiş okunuyor…";
+      progressCb = m => {
+        if (m.status === "recognizing text") { msg.textContent = "✨ Fiş okunuyor… %" + Math.round(m.progress*100); fill.style.width = (40 + m.progress*60) + "%"; }
+        else if (/loading/.test(m.status||"")) { fill.style.width = (5 + (m.progress||0)*35) + "%"; }
+      };
+      try {
+        const w = await getWorker();
+        ls.set("fd.ocrReady", true);
+        const canvas = await prepForOcr(pendingBlob);
+        const { data } = await w.recognize(canvas);
+        const n = applyParsed(parseReceipt(data.text || ""), false);
+        msg.className = "ocr-msg";
+        const hint = getGemKey() ? "" : " Daha doğru okuma için ⚙️ Ayarlar'dan yapay zekayı (Gemini) aç.";
+        msg.textContent = (n >= 2 ? "✓ "+n+" alan dolduruldu. Tutarı ve tarihi kontrol et." : "Fiş net okunamadı. Daha yakından ve düz çekip tekrar dene ya da elle gir.") + hint;
+      } catch(e) {
+        msg.className = "ocr-msg";
+        msg.textContent = navigator.onLine === false && firstTime
+          ? "İlk kullanımda okuma motorunu indirmek için internet gerekiyor. İnternete bağlanınca tekrar dene."
+          : "Fiş okunamadı. Tekrar dene ya da bilgileri elle gir.";
+      }
     } finally {
       fill.style.width = "100%"; setTimeout(()=>prog.classList.remove("show"), 400);
       save.disabled = false; ocrBusy = false; progressCb = null;
@@ -871,6 +986,37 @@
     }
   }
   $("ocrRetry").onclick = runOcr;
+
+  // ---- Ayarlar: Gemini anahtarı ----
+  function renderGem(){
+    const k = getGemKey(), st = $("gemState");
+    $("gemDel").classList.toggle("hidden", !k);
+    if (k) { st.className = "perm ok"; st.textContent = "✓ Yapay zeka açık · anahtar: …" + k.slice(-4) + (ls.get("fd.gemModel", null) ? " · model: " + ls.get("fd.gemModel") : ""); $("gemKey").value = ""; $("gemKey").placeholder = "Yeni anahtar yapıştır (değiştirmek için)"; }
+    else { st.className = "perm no"; st.textContent = "Yapay zeka kapalı. Fişler telefondaki basit okuyucuyla okunuyor."; $("gemKey").placeholder = "AIza… ile başlayan anahtarı yapıştır"; }
+  }
+  $("gemSave").onclick = async () => {
+    const key = $("gemKey").value.trim();
+    if (!key) { toast("Önce anahtarı yapıştır."); return; }
+    const btn = $("gemSave"); btn.disabled = true; btn.textContent = "Deneniyor…";
+    try {
+      ls.set("fd.gemModel", null);
+      const { text } = await geminiCall([{ text: 'Sadece şu JSON nesnesini döndür: {"ok": true}' }], key);
+      if (!extractJson(text)) throw { code:"parse" };
+      ls.set("fd.gemKey", key); renderGem(); toast("Yapay zeka açıldı ✓");
+    } catch(e) {
+      const c = e && e.code;
+      toast(c === "badkey" ? "Bu anahtar geçersiz. Tamamını kopyaladığından emin ol."
+        : c === "quota" ? "Anahtar doğru ama Google kullanım sınırı 0 görünüyor. Aşağıdaki nota bak."
+        : c === "network" ? "İnternet yok. Bağlanınca tekrar dene."
+        : "Anahtar denenemedi. Tekrar dene.");
+      $("gemState").className = "perm no";
+      $("gemState").textContent = c === "quota" ? "Google bu hesapta ücretsiz kullanım vermiyor (kota 0). AI Studio'da faturalandırmayı açman gerekebilir." : "Anahtar kaydedilmedi.";
+    } finally { btn.disabled = false; btn.textContent = "Kaydet ve dene"; }
+  };
+  $("gemDel").onclick = async () => {
+    if (!await confirmBox("Gemini anahtarı bu telefondan silinsin mi? Fişler yine okunur ama daha basit okuyucuyla.", "Sil")) return;
+    ls.set("fd.gemKey", ""); ls.set("fd.gemModel", null); renderGem(); toast("Anahtar silindi");
+  };
 
   // ================= Form =================
   let editing = null, pendingBlob = null;
@@ -1045,7 +1191,7 @@
     window.scrollTo({top:0});
   }
   document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { lastTab = b.dataset.v; show(b.dataset.v); }));
-  $("setBtn").onclick = () => { renderPerm(); renderBackup(); show("settings"); };
+  $("setBtn").onclick = () => { renderPerm(); renderBackup(); renderGem(); show("settings"); };
   $("backBtn").onclick = () => show(lastTab);
   $("addBtn").onclick = () => { openForm(null); $("file").click(); };
   $("yearSel").onchange = e => { state.year = parseInt(e.target.value); render(); };
