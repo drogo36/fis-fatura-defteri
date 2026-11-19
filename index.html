@@ -658,7 +658,7 @@
     const sent = ls.get("fd.sent", {});
     if (sent[key]) return;
     sent[key] = Date.now(); ls.set("fd.sent", sent);
-    addInAppAlert(key, title + " " + body, level);
+    addInAppAlert(key, title + ". " + body, level);
     await notify(title, body, key);
   }
   async function checkAlerts(){
